@@ -111,7 +111,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         Transaction.objects.create(user=instance)
 
 
-@receiver(post_save, sender=User)
+@receiver(post_save, sender=TelegramUser)
 def save_user_profile(sender, instance, **kwargs):
     instance.telegramusersettings.save()
     instance.transaction.save()
