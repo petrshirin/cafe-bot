@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 
+from django.db.models.signals import pre_save, post_save
+from django.dispatch import receiver
+
 
 class NonStrippingTextField(models.TextField):
     """A TextField that does not strip whitespace at the beginning/end of
@@ -88,6 +91,7 @@ class Cheque(models.Model):
 
 
 class TelegramUserSettings(models.Model):
+    user = models.OneToOneField(TelegramUser, on_delete=models.CASCADE)
     language = models.CharField(max_length=5)
     cards = models.ManyToManyField(Card)
     email = models.EmailField()
@@ -95,12 +99,22 @@ class TelegramUserSettings(models.Model):
 
 
 class Transaction(models.Model):
-    user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(TelegramUser, on_delete=models.CASCADE)
     status = models.CharField(max_length=255)
     hash = models.CharField(max_length=255)
 
 
+@receiver(post_save, sender=TelegramUser)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        TelegramUserSettings.objects.create(user=instance)
+        Transaction.objects.create(user=instance)
 
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.telegramusersettings.save()
+    instance.transaction.save()
 
 
 
