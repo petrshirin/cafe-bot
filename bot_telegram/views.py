@@ -13,11 +13,11 @@ bot = TeleBot('')
 
 def get_web_hook(request, bot_id):
     bot_orm = TelegramBot.objects.filter(pk=bot_id).first()
-    json_data = json.loads(request.body.encode('utf-8'))
+    json_data = json.loads(request.body)
     if not bot_orm:
         print('fail bot')
         return HttpResponse('fail bot', status=403)
-    print(json_data)
+    print(str(json_data).encode('utf-8'))
     if json_data.get("token") == str(bot_orm.token):
         global bot
         bot.token = bot_orm.token
