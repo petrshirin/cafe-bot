@@ -15,10 +15,10 @@ def get_web_hook(request, bot_id):
     bot_orm = TelegramBot.objects.filter(pk=bot_id).first()
     if not bot_orm:
         return HttpResponse('fail bot', status=403)
-    if request.data.get("token") == bot_orm.token:
+    if request.body.get("token") == bot_orm.token:
         global bot
         bot.token = bot_orm.token
-        request_body_dict = request.data
+        request_body_dict = request.body
         update = types.Update.de_json(request_body_dict)
         bot.process_new_updates([update])
         return HttpResponse('ok', status=200)
