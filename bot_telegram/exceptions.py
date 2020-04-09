@@ -1,0 +1,6 @@
+
+
+class NotEnoughBonuses(ValueError):
+    pass
+
+

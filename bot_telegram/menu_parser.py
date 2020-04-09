@@ -1,39 +1,45 @@
+import json
 
 
 class MenuAddition:
 
-    def __init__(self, addition):
+    def __init__(self, addition, previous_id):
         self.id = addition['id']
         self.name = addition['name']
         self.price = addition['price']
+        self.previous_id = previous_id
 
 
 class MenuProduct:
 
-    def __init__(self, product):
+    def __init__(self, product, previous_id):
         self.id = product['id']
         self.name = product['name']
         self.product = []
+        self.previous_id = previous_id
         self.price = product['price']
+        self.volume = product['volume']
+        self.unit = product['unit']
         self.time_cooking = product['time_cooking']
         self.additions = self.parse_additions(product)
 
-    @staticmethod
-    def parse_additions(product):
+    def parse_additions(self, product):
         additions = []
         if product['additions']:
             for addition in product['additions']:
-                additions.append(MenuAddition(addition))
+                additions.append(MenuAddition(addition, self.id))
         return additions
 
 
 class MenuStruct:
 
-    def __init__(self, menu, deep):
+    def __init__(self, menu, previous_id):
         self.menu = menu
+        if type(self.menu) == str:
+            self.menu = json.loads(self.menu)
         self.type = None
-        self.deep = deep
         self.name = self.menu.get('name', None)
+        self.previous_id = previous_id
         self.id = self.menu.get('id', None)
         self.categories = []
         self.products = []
@@ -41,15 +47,24 @@ class MenuStruct:
         self.all_products = []
 
     def create_struct(self):
-        if self.menu.get('products'):
+
+        if self.menu.get('products') and self.menu.get('categories'):
+            self.type = 'combined'
+            self.products = []
+            for product in self.menu['products']:
+                self.products.append(MenuProduct(product, self.id))
+            self.categories = []
+            for category in self.menu['categories']:
+                self.categories.append(MenuStruct(category, self.id))
+        elif self.menu.get('products'):
             self.type = 'products'
             self.products = []
             for product in self.menu['products']:
-                self.products.append(MenuProduct(product))
+                self.products.append(MenuProduct(product, self.id))
         elif self.menu.get('categories'):
             self.type = 'categories'
             for category in self.menu['categories']:
-                self.categories.append(MenuStruct(category, self.deep + 1))
+                self.categories.append(MenuStruct(category, self.id))
 
     def get_category(self, category_id):
         for category in self.categories:
@@ -69,97 +84,9 @@ class MenuStruct:
         for category in self.categories:
             return category.get_product(product_id)
 
-struct = '''{
-  "additions": [
-    {
-      "id": 1,
-      "name": "Ваниль",
-      "price": 20
-    },
-    {
-      "id": 2,
-      "name": "Карамель",
-      "price": 20
-    }
-  ],
-  "products": null,
-  "id": 0,
-  "categories": [
-    {
-      "id": 1,
-      "name": "Еда и Десерты",
-      "products": null,
-      "categories": [
-        {
-          "id": 3,
-          "name": "Комбо",
-          "products": [
-            {
-              "id": 1,
-              "name": "Комбо 1",
-              "price": 500,
-              "time_cooking": "01:00:00",
-              "additions": null
-            },
-            {
-              "id": 2,
-              "name": "Комбо 1",
-              "price": 1500,
-              "time_cooking": "01:00:00",
-              "additions": null
-            }
-          ]
-        },
-        {
-          "id": 4,
-          "name": "Еда",
-          "products": [
-            {
-              "id": 3,
-              "name": "Еда 1",
-              "price": 200,
-              "time_cooking": "00:30:00",
-              "additions": null
-            },
-            {
-              "id": 4,
-              "name": "Комбо 1",
-              "price": 400,
-              "time_cooking": "00:20:00",
-              "additions": null
-            }
-          ]
-        },
-        {
-          "id": 5,
-          "name": "Десерты",
-          "products": [
-            {
-              "id": 5,
-              "name": "Десерт 1",
-              "price": 500,
-              "time_cooking": "01:00:00",
-              "additions": null
-            },
-            {
-              "id": 6,
-              "name": "Десерт 2",
-              "price": 1500,
-              "time_cooking": "01:00:00",
-              "additions": null
-            }
-          ]
-        }
-        ]
-    },
-    {
-      "id": 2,
-      "name": "Еда и Десерты",
-      "products": null,
-      "categories": [
-        {}
-      ]
-    }
-  ]
-}'''
 
+
+
+if __name__ == '__main__':
+    m = MenuStruct(json.loads(struct), -1)
+    print(m.categories[0].categories[0].previous_id)

@@ -17,7 +17,18 @@
     {
       "id": 1,
       "name": "Еда и Десерты",
-      "products": null,
+      "products": [
+        {
+              "id": 7,
+              "name": "Десерт 2",
+              "price": 1500,
+              "description": "description1",
+              "volume": "500",
+              "unit": "мл",
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+      ],
       "categories": [
         {
           "id": 3,
@@ -26,6 +37,9 @@
             {
               "id": 1,
               "name": "Комбо 1",
+              "description": "description1",
+              "volume": "500",
+              "unit": "мл",
               "price": 500,
               "time_cooking": "01:00:00",
               "additions": null
@@ -34,6 +48,9 @@
               "id": 2,
               "name": "Комбо 1",
               "price": 1500,
+              "description": "description1",
+              "volume": "500",
+              "unit": "мл",
               "time_cooking": "01:00:00",
               "additions": null
             }
@@ -46,6 +63,9 @@
             {
               "id": 3,
               "name": "Еда 1",
+              "description": "description1",
+              "volume": "500",
+              "unit": "мл",
               "price": 200,
               "time_cooking": "00:30:00",
               "additions": null
@@ -54,6 +74,9 @@
               "id": 4,
               "name": "Комбо 1",
               "price": 400,
+              "description": "description1",
+              "volume": "500",
+              "unit": "мл",
               "time_cooking": "00:20:00",
               "additions": null
             }
@@ -67,6 +90,9 @@
               "id": 5,
               "name": "Десерт 1",
               "price": 500,
+              "description": "description1",
+              "volume": "500",
+              "unit": "мл",
               "time_cooking": "01:00:00",
               "additions": null
             },
@@ -74,6 +100,9 @@
               "id": 6,
               "name": "Десерт 2",
               "price": 1500,
+              "description": "description1",
+              "volume": "500",
+              "unit": "мл",
               "time_cooking": "01:00:00",
               "additions": null
             }
