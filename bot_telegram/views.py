@@ -17,7 +17,8 @@ def get_web_hook(request, bot_id):
     if not bot_orm:
         print('fail bot')
         return HttpResponse('fail bot', status=403)
-    if json_data.get("token") == bot_orm.token:
+    print(json_data.get("token"))
+    if json_data.get("token") == str(bot_orm.token):
         global bot
         bot.token = bot_orm.token
         request_body_dict = json_data
