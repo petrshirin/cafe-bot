@@ -18,16 +18,12 @@ def get_web_hook(request, bot_id):
         print('fail bot')
         return HttpResponse('fail bot', status=403)
     print(str(json_data).encode('utf-8'))
-    if json_data.get("token") == str(bot_orm.token):
-        global bot
-        bot.token = bot_orm.token
-        request_body_dict = json_data
-        update = types.Update.de_json(request_body_dict)
-        bot.process_new_updates([update])
-        return HttpResponse('ok', status=200)
-    else:
-        print('fail token')
-        return HttpResponse('fail token', status=403)
+    global bot
+    bot.token = bot_orm.token
+    request_body_dict = json_data
+    update = types.Update.de_json(request_body_dict)
+    bot.process_new_updates([update])
+    return HttpResponse('ok', status=200)
 
 
 @bot.message_handler(commands=['start'])
