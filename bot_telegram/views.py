@@ -205,6 +205,7 @@ def inline_logic(c):
         except Exception as err:
             print(err)
             return
+        print(rest_id, product_id)
         user.step = action.buy_product(rest_id, product_id)
 
     elif 'product_' in c.data:
