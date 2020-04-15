@@ -329,7 +329,7 @@ class BotAction:
         if product_orm:
             user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
                                                               is_basket=False, is_store=False).first()
-            if not user_product:
+            if user_product:
                 markup.add(types.InlineKeyboardButton('Добавить в корзину и продолжить покупки', callback_data=f'addtobasket_{restaurant.pk}_{user_product.pk}'))
                 markup.add(types.InlineKeyboardButton('Оплатить картой', callback_data=f'productpay_{restaurant.pk}_{user_product.pk}'))
                 markup.add(types.InlineKeyboardButton('Оплатить другой картой', callback_data=f'productpayanouther_{restaurant.pk}_{user_product.pk}'))
