@@ -391,7 +391,7 @@ class BotAction:
             self.bot.send_message(chat_id=self.message.chat.id, text=message_text)
             return self.user.step
         restaurant = Restaurant.objects.get(pk=restaurant_id)
-        transaction = Transaction(user=self.user, count=product.product.price * 100)
+        transaction = Transaction(user=self.user, count=product.product.price * 100, restaurant=restaurant,)
         transaction.save()
         transaction.products.add(product)
         product.is_store = True
