@@ -259,7 +259,7 @@ class BotAction:
         product_orm = restaurant.products.filter(pk=product.id).first()
         if product_orm:
             user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
-                                                             is_basket=False, is_store=False).first()
+                                                              is_basket=False, is_store=False).first()
             if not user_product:
                 user_product = TelegramUserProduct(user=self.user, product=product_orm)
                 user_product.save()
@@ -279,7 +279,7 @@ class BotAction:
         else:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
             markup = types.InlineKeyboardMarkup(row_width=1)
-            markup.add(types.InlineKeyboardButton(f'', callback_data=f'category_{restaurant.pk}_{product.previous_id}'))
+            markup.add(types.InlineKeyboardButton(f'Назад', callback_data=f'category_{restaurant.pk}_{product.previous_id}'))
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
@@ -296,7 +296,7 @@ class BotAction:
 
         if count_additions == 0:
             message_text = self.get_message_text('additions_not_found', 'В этот продукт ничего нельзя добавить')
-            self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text+f'\n\n{message_text}',
+            self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
                                        message_id=self.message.message_id)
         return self.user.step
 
@@ -328,7 +328,7 @@ class BotAction:
         product_orm = restaurant.products.filter(pk=product_id).first()
         if product_orm:
             user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
-                                                             is_basket=False, is_store=False).first()
+                                                              is_basket=False, is_store=False).first()
             if not user_product:
                 markup.add(types.InlineKeyboardButton('Добавить в корзину и продолжить покупки', callback_data=f'addtobasket_{restaurant.pk}_{user_product.pk}'))
                 markup.add(types.InlineKeyboardButton('Оплатить картой', callback_data=f'productpay_{restaurant.pk}_{user_product.pk}'))
@@ -338,7 +338,9 @@ class BotAction:
                 markup.add(types.InlineKeyboardButton('Вернуться к продукту', callback_data=f'buyproduct_{restaurant.pk}_{user_product.pk}'))
                 message_text = self.get_message_text('buyproduct', 'Выберите действие')
                 self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
-
+        else:
+            message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
+            self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id)
         return self.user.step
 
     def add_to_basket(self, restaurant_id, user_product):
@@ -404,7 +406,7 @@ class BotAction:
                                        message_id=self.message.message_id, reply_markup=markup)
             return self.user.step
         else:
-            self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text+f"\n\nУ вас не найдено ни одной карты, выберите оплатить другой картой, чтобы она привязалась",
+            self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f"\n\nУ вас не найдено ни одной карты, выберите оплатить другой картой, чтобы она привязалась",
                                        message_id=self.message.message_id)
             return self.user.step
 
@@ -466,7 +468,7 @@ class BotAction:
                 transaction = payment_system.init_pay(self.user, transaction)
             except NotEnoughBonuses:
                 message_text = self.get_message_text('not_enough_bonuses', 'У вас недостаточно бонусов на счете, оплатите заказ картой')
-                self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text+f'\n\n{message_text}',
+                self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
                                            message_id=self.message.message_id)
                 return self.user.step
             transaction.save()
