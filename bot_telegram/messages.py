@@ -275,7 +275,7 @@ class BotAction:
             if product_orm.image:
                 self.bot.send_photo(self.message.chat.id, open(product_orm.image.path, 'rb'), caption=message_text, reply_markup=markup)
             else:
-                self.bot.send_message(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+                self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
         else:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
             markup = types.InlineKeyboardMarkup(row_width=1)
