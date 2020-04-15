@@ -261,7 +261,7 @@ class BotAction:
             user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
                                                               is_basket=False, is_store=False).first()
             if not user_product:
-                user_product = TelegramUserProduct(user=self.user, product=product_orm)
+                user_product = TelegramUserProduct(user=self.user, product=product_orm, is_basket=False, is_store=False)
                 user_product.save()
             message_text = self.get_message_text('product', 'Вы выбрали: {}')
             message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price}₽\n\n{product_orm.description}')
@@ -338,6 +338,8 @@ class BotAction:
                 markup.add(types.InlineKeyboardButton('Вернуться к продукту', callback_data=f'buyproduct_{restaurant.pk}_{user_product.pk}'))
                 message_text = self.get_message_text('buyproduct', 'Выберите действие')
                 self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+            else:
+
         else:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id)
