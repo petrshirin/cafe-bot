@@ -362,7 +362,7 @@ class BotAction:
     def pay_another_card(self, restaurant_id, product_id):
         try:
             product = TelegramUserProduct.objects.get(product_id)
-        except TelegramUserProduct.DoesNotExits:
+        except TelegramUserProduct.DoesNotExist:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
             self.bot.send_message(chat_id=self.message.chat.id, text=message_text)
             return self.user.step
@@ -386,7 +386,7 @@ class BotAction:
     def pay_card(self, restaurant_id, product_id):
         try:
             product = TelegramUserProduct.objects.get(product_id)
-        except TelegramUserProduct.DoesNotExits:
+        except TelegramUserProduct.DoesNotExist:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
             self.bot.send_message(chat_id=self.message.chat.id, text=message_text)
             return self.user.step
