@@ -1,5 +1,3 @@
-from abc import ABC
-
 from django.core.management.base import LabelCommand
 import telebot
 from bot_telegram.models import TelegramBot

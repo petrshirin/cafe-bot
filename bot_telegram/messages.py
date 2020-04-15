@@ -8,7 +8,7 @@ from .pay_system import *
 class BotAction:
 
     def __init__(self, bot, message, user):
-        self.bot = TeleBot('904287379:AAFfP3aLUBJZ_xvUrP7jsed3CjSzsaAmIig')  # bot
+        self.bot = bot
         self.message = message
         self.user = user
 
@@ -258,7 +258,7 @@ class BotAction:
         restaurant = Restaurant.objects.get(pk=restaurant_id)
         product_orm = restaurant.products.filter(pk=product.id).first()
         if product_orm:
-            user_product = TelegramUserProduct.objects.fiter(user=self.user, product=product_orm,
+            user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
                                                              is_basket=False, is_store=False).first()
             if not user_product:
                 user_product = TelegramUserProduct(user=self.user, product=product_orm)
@@ -275,12 +275,12 @@ class BotAction:
             if product_orm.image:
                 self.bot.send_photo(self.message.chat.id, open(product_orm.image.path, 'rb'), caption=message_text, reply_markup=markup)
             else:
-                self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+                self.bot.send_message(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
         else:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
             markup = types.InlineKeyboardMarkup(row_width=1)
             markup.add(types.InlineKeyboardButton(f'', callback_data=f'category_{restaurant.pk}_{product.previous_id}'))
-            self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
+            self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
     def restaurant_additions(self, restaurant_id, user_product, additions):
@@ -327,7 +327,7 @@ class BotAction:
             last_transaction.delete()
         product_orm = restaurant.products.filter(pk=product_id).first()
         if product_orm:
-            user_product = TelegramUserProduct.objects.fiter(user=self.user, product=product_orm,
+            user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
                                                              is_basket=False, is_store=False).first()
             if not user_product:
                 markup.add(types.InlineKeyboardButton('Добавить в корзину и продолжить покупки', callback_data=f'addtobasket_{restaurant.pk}_{user_product.pk}'))
