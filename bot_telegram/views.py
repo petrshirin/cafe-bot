@@ -197,6 +197,16 @@ def inline_logic(c):
             else:
                 user.step = action.restaurant_category(restaurant.pk, category, page)
 
+    elif 'buyproduct_' in c.data:
+        try:
+            param = c.data.split('_')
+            rest_id = int(param[1])
+            product_id = int(param[2])
+        except Exception as err:
+            print(err)
+            return
+        user.step = action.buy_product(rest_id, product_id)
+
     elif 'product_' in c.data:
         try:
             param = c.data.split('_')
@@ -253,16 +263,6 @@ def inline_logic(c):
             addition = Addition.objects.filter(pk=addition_id).first()
             if addition:
                 user.step = action.add_addition(rest_id, user_product, addition)
-
-    elif 'buyproduct_' in c.data:
-        try:
-            param = c.data.split('_')
-            rest_id = int(param[1])
-            product_id = int(param[2])
-        except Exception as err:
-            print(err)
-            return
-        user.step = action.buy_product(rest_id, product_id)
 
     elif 'productpay_' in c.data:
         try:
