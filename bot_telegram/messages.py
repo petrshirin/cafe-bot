@@ -338,7 +338,7 @@ class BotAction:
                 markup.add(types.InlineKeyboardButton('Вернуться к продукту', callback_data=f'buyproduct_{restaurant.pk}_{user_product.pk}'))
                 message_text = self.get_message_text('buyproduct', 'Выберите действие')
                 self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
-            else:
+
 
         else:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
