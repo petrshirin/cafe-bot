@@ -40,6 +40,7 @@ class TinkoffPay:
         res = requests.post('https://securepay.tinkoff.ru/v2/Init', json=body)
 
         if res.ok:
+            print(res.json())
             res = res.json()
             return res
         else:
