@@ -37,7 +37,7 @@ class TinkoffPay:
                 } for item in products]
             }
 
-        res = requests.post('https://securepay.tinkoff.ru/v2/Init', body=body)
+        res = requests.post('https://securepay.tinkoff.ru/v2/Init', json=body)
 
         if res.ok:
             res = res.json()
@@ -71,7 +71,7 @@ class TinkoffPay:
                 } for item in products]
             }
 
-        res = requests.post('https://securepay.tinkoff.ru/v2/Init', body=body)
+        res = requests.post('https://securepay.tinkoff.ru/v2/Init', json=body)
 
         if res.ok:
             res = res.json()
@@ -85,7 +85,7 @@ class TinkoffPay:
                 body['SendEmail'] = True
                 body['InfoEmail'] = email
             body = self.do_sign(body)
-            res = requests.post('https://securepay.tinkoff.ru/v2/Charge', body=body)
+            res = requests.post('https://securepay.tinkoff.ru/v2/Charge', json=body)
 
             if res.ok:
                 res = res.json()
@@ -106,7 +106,7 @@ class TinkoffPay:
         }
         body = self.do_sign(body)
 
-        res = requests.post('https://securepay.tinkoff.ru/v2/GetCardList', body=body)
+        res = requests.post('https://securepay.tinkoff.ru/v2/GetCardList', json=body)
         if res.ok:
             res = res.json()
             return res
@@ -122,7 +122,7 @@ class TinkoffPay:
             'Token': ''
         }
         body = self.do_sign(body)
-        res = requests.post('https://securepay.tinkoff.ru/v2/GetCardList', body=body)
+        res = requests.post('https://securepay.tinkoff.ru/v2/GetCardList', json=body)
 
         if res.ok:
             res = res.json()
