@@ -372,7 +372,7 @@ class BotAction:
         transaction.products.add(product)
         product.is_store = True
         product.save()
-        owner = restaurant.telegram_bot.owner.pk
+        owner = restaurant.telegram_bot.owner
         payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
         transaction = payment_system.init_pay(self.user, transaction)
 
@@ -426,7 +426,7 @@ class BotAction:
                 markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
                 self.bot.send_message(self.message.chat.id, 'Ресторан пропал, закажите в другом', reply_markup=markup)
                 return 0
-            owner = restaurant.telegram_bot.owner.pk
+            owner = restaurant.telegram_bot.owner
             payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
 
             try:
