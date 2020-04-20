@@ -27,7 +27,7 @@ class PaySystem:
         else:
             self.url += str(user.user_id)
             self.worker.URL = self.url
-            response = self.worker.init_parent_pay(transaction.count, transaction.pk, "Cafe bot payment", user.user_id, user.usersetting.email, transaction.products.all())
+            response = self.worker.init_parent_pay(transaction.count, transaction.pk, "Cafe bot payment", user.user_id, user.telegramusersettings.email, transaction.products.all())
 
             if response:
                 transaction.payment_id = response['PaymentID']
@@ -49,7 +49,7 @@ class PaySystem:
             raise NotEnoughBonuses
         else:
 
-            response = self.worker.do_pay(card.rebill_id, transaction.count, transaction.pk, "Cafe bot payment", user.user_id, user.usersetting.email)
+            response = self.worker.do_pay(card.rebill_id, transaction.count, transaction.pk, "Cafe bot payment", user.user_id, user.telegramusersettings.email)
             if response:
                 transaction.payment_id = response['PaymentID']
                 transaction.status = 1
