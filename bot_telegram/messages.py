@@ -368,6 +368,7 @@ class BotAction:
             return self.user.step
         restaurant = Restaurant.objects.get(pk=restaurant_id)
         transaction = Transaction(user=self.user, count=product.product.price * 100)
+        transaction.save()
         transaction.products.add(product)
         product.is_store = True
         product.save()
