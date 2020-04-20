@@ -25,7 +25,7 @@ class PaySystem:
                 return transaction
             raise NotEnoughBonuses
         else:
-            self.url += user.user_id
+            self.url += str(user.user_id)
             self.worker.URL = self.url
             response = self.worker.init_pay(transaction.count, transaction.pk, "Cafe bot payment", user.user_id, user.usersetting.email, transaction.products.all())
 
