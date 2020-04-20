@@ -396,7 +396,7 @@ class BotAction:
         transaction.products.add(product)
         product.is_store = True
         product.save()
-        last_transactions = Transaction.objects.filter(user=self.user, payment_type=restaurant.restaurantsettings.payment_type).all()
+        last_transactions = Transaction.objects.filter(user=self.user).all()
         if last_transactions:
             transaction.save()
             user_cards = Card.objects.filter(is_deleted=False, user=self.user).all()
