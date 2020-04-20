@@ -27,7 +27,7 @@ class PaySystem:
         else:
             self.url += str(user.user_id)
             self.worker.URL = self.url
-            response = self.worker.init_pay(transaction.count, transaction.pk, "Cafe bot payment", user.user_id, user.usersetting.email, transaction.products.all())
+            response = self.worker.init_parent_pay(transaction.count, transaction.pk, "Cafe bot payment", user.user_id, user.usersetting.email, transaction.products.all())
 
             if response:
                 transaction.payment_id = response['PaymentID']
