@@ -298,6 +298,10 @@ class BotAction:
             message_text = self.get_message_text('additions_not_found', 'В этот продукт ничего нельзя добавить')
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
                                        message_id=self.message.message_id)
+        else:
+            message_text = self.get_message_text('additions', 'Выберите, что хотите добавить')
+            self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
+                                       message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
     def add_addition(self, restaurant_id, user_product, addition):
