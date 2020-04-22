@@ -287,9 +287,10 @@ class BotAction:
         restaurant = Restaurant.objects.get(pk=restaurant_id)
         markup = types.InlineKeyboardMarkup(row_width=1)
         count_additions = 0
+        all_user_additions = user_product.additions.all()
         for addition in additions:
             addition_orm = Addition.objects.filter(pk=addition.id).first()
-            if addition_orm:
+            if addition_orm and addition_orm not in all_user_additions:
                 count_additions += 1
                 markup.add(types.InlineKeyboardButton(f'{addition_orm.name} ({addition_orm.price}₽)', callback_data=f'additionadd_{restaurant.pk}_{user_product.pk}_{addition_orm.pk}'))
         markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
