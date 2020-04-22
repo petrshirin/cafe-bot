@@ -316,7 +316,7 @@ class BotAction:
                 if addition in user_product.additions.all() or addition == addition:
                     count_additions += 1
                     markup.add(types.InlineKeyboardButton(f'{addition_orm.name} ({addition_orm.price}₽)', callback_data=f'additionadd_{restaurant.pk}_{user_product.pk}_{addition_orm.pk}'))
-        markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{addition[0].previos_id}'))
+        markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
 
         message_text = f'{addition.name} добавлен\n'
         self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
