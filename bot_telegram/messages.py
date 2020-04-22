@@ -292,7 +292,7 @@ class BotAction:
             if addition_orm:
                 count_additions += 1
                 markup.add(types.InlineKeyboardButton(f'{addition_orm.name} ({addition_orm.price}₽)', callback_data=f'additionadd_{restaurant.pk}_{user_product.pk}_{addition_orm.pk}'))
-        markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{additions[0].previos_id}'))
+        markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
 
         if count_additions == 0:
             message_text = self.get_message_text('additions_not_found', 'В этот продукт ничего нельзя добавить')
