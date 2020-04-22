@@ -26,7 +26,7 @@ DEBUG = True
 SERVER = False
 ALLOWED_HOSTS = ['127.0.0.1', '137.74.215.48']
 
-PAYMENT_URL = 'http://127.0.0.1/payment'
+PAYMENT_URL = 'https://mytesttelegrambotdev.ru/payment'
 
 # Application definition
 
