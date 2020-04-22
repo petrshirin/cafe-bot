@@ -267,7 +267,7 @@ class BotAction:
             message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price}₽\n\n{product_orm.description}')
 
             markup = types.InlineKeyboardMarkup(row_width=1)
-            markup.add(types.InlineKeyboardButton('Купить', callback_data=f'buyproduct_{restaurant.pk}_{user_product.pk}'))
+            markup.add(types.InlineKeyboardButton('Купить', callback_data=f'buyproduct_{restaurant.pk}_{user_product.product.pk}'))
             if product_orm.additions.all():
                 markup.add(types.InlineKeyboardButton(f'Добавить что в {product_orm.name}', callback_data=f'additions_{restaurant.pk}_{user_product.pk}'))
             markup.add(types.InlineKeyboardButton(f'Назад', callback_data=f'category_{restaurant.pk}_{product.previous_id}_0'))
