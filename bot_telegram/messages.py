@@ -268,7 +268,7 @@ class BotAction:
 
             markup = types.InlineKeyboardMarkup(row_width=1)
             markup.add(types.InlineKeyboardButton('Купить', callback_data=f'buyproduct_{restaurant.pk}_{user_product.pk}'))
-            if product.additions:
+            if product_orm.additions.all():
                 markup.add(types.InlineKeyboardButton(f'Добавить что в {product_orm.name}', callback_data=f'additions_{restaurant.pk}_{user_product.pk}'))
             markup.add(types.InlineKeyboardButton(f'Назад', callback_data=f'category_{restaurant.pk}_{product.previous_id}_0'))
 
@@ -321,7 +321,7 @@ class BotAction:
 
     def buy_product(self, restaurant_id, product_id):
         restaurant = Restaurant.objects.get(pk=restaurant_id)
-        markup = types.InlineKeyboardMarkup(row_width=3)
+        markup = types.InlineKeyboardMarkup(row_width=1)
         last_transaction = Transaction.objects.filter(user=self.user, status=0, url=None)
         if last_transaction:
             last_transaction.delete()
@@ -335,10 +335,12 @@ class BotAction:
                 markup.add(types.InlineKeyboardButton('Оплатить другой картой', callback_data=f'productpayanouther_{restaurant.pk}_{user_product.pk}'))
                 markup.add(types.InlineKeyboardButton('Оплатить бонусами', callback_data=f'productbonuspay_{restaurant.pk}_{user_product.pk}'))
                 markup.add(types.InlineKeyboardButton('Перейти в корзину', callback_data=f'basket'))
-                markup.add(types.InlineKeyboardButton('Вернуться к продукту', callback_data=f'buyproduct_{restaurant.pk}_{user_product.pk}'))
+                markup.add(types.InlineKeyboardButton('Вернуться к продукту', callback_data=f'product_{restaurant.pk}_{user_product.pk}'))
                 message_text = self.get_message_text('buyproduct', 'Выберите действие')
                 self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
-
+            else:
+                message_text = self.get_message_text('invalid_user_product', 'Вы не можете выбрать этот продукт')
+                self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
 
         else:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
