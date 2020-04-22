@@ -28,6 +28,14 @@ def get_payment_tinkoff(request):
                         card = Card(user=transaction.user, rebill_id=data['RebillID'], card_number= request_card['Pan'])
                         card.save()
 
+            elif data['Status'] == 'PREAUTHORIZING':
+                transaction.status = 1
+                transaction.save()
+
+            elif data['Status'] == 'REJECTED' or data['Status'] == 'CANCELED' or data['Status'] == 'DEADLINE_EXPIRED':
+                transaction.status = 3
+                transaction.save()
+
         else:
             return HttpResponse('fail transaction', status=401)
 

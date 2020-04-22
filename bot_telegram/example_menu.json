@@ -27,7 +27,17 @@
               "unit": "шт",
               "time_cooking": "01:00:00",
               "additions": null
-            }
+            },
+        {
+              "id": 10,
+              "name": "Test product",
+              "price": 2,
+              "description": "Test product",
+              "volume": "500",
+              "unit": "мл",
+              "time_cooking": "01:00:00",
+              "additions": null
+        }
       ],
       "categories": [
         {
