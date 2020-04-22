@@ -321,7 +321,7 @@ class BotAction:
 
         message_text = f'{addition.name} добавлен\n'
         self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
-                                   message_id=self.message.message_id)
+                                   message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
     def buy_product(self, restaurant_id, product_id):
