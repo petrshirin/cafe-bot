@@ -401,16 +401,13 @@ class BotAction:
         restaurant = Restaurant.objects.get(pk=restaurant_id)
         transaction = Transaction(user=self.user, count=user_product.product.price * 100, restaurant=restaurant,)
         transaction.save()
-        transaction.products.add(user_product)
-        user_product.is_store = True
-        user_product.save()
         last_transactions = Transaction.objects.filter(user=self.user).all()
         if last_transactions:
             transaction.save()
             user_cards = Card.objects.filter(is_deleted=False, user=self.user).all()
             markup = types.InlineKeyboardMarkup(row_width=1)
             for user_card in user_cards:
-                markup.add(types.InlineKeyboardButton(f'{user_card.card_number}', callback_data=f'choicecard_{restaurant.pk}_{user_card.pk}_{transaction.pk}'))
+                markup.add(types.InlineKeyboardButton(f'{user_card.card_number}', callback_data=f'choicecard_{restaurant.pk}_{user_card.pk}_{transaction.pk}_{user_product.pk}'))
             markup.add(types.InlineKeyboardButton('Назад', callback_data=f'buyproduct_{restaurant.pk}_{user_product.product.pk}'))
             message_text = self.get_message_text('choice_card', 'Выберите карту для оплаты')
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
@@ -421,10 +418,13 @@ class BotAction:
                                        message_id=self.message.message_id)
             return self.user.step
 
-    def choice_card(self, restaurant_id, transaction_id, user_card_id):
+    def choice_card(self, restaurant_id, transaction_id, user_card_id, user_product_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
-
-        if transaction:
+        user_product = TelegramUserProduct.objects.filter(pk=user_card_id)
+        if transaction and user_product:
+            transaction.products.add(user_product)
+            user_product.is_store = True
+            user_product.save()
             try:
                 restaurant = Restaurant.objects.get(pk=restaurant_id)
             except Restaurant.DoesNotExist:
