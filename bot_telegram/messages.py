@@ -374,7 +374,10 @@ class BotAction:
             self.bot.send_message(chat_id=self.message.chat.id, text=message_text)
             return self.user.step
         restaurant = Restaurant.objects.get(pk=restaurant_id)
-        transaction = Transaction(user=self.user, count=product.product.price * 100, restaurant=restaurant)
+        additions_price = 0
+        for addition in product.additions.all():
+            additions_price += addition.price * 100
+        transaction = Transaction(user=self.user, count=product.product.price * 100 + additions_price, restaurant=restaurant)
         transaction.save()
         transaction.products.add(product)
         product.is_store = True
@@ -399,7 +402,10 @@ class BotAction:
             self.bot.send_message(chat_id=self.message.chat.id, text=message_text)
             return self.user.step
         restaurant = Restaurant.objects.get(pk=restaurant_id)
-        transaction = Transaction(user=self.user, count=user_product.product.price * 100, restaurant=restaurant,)
+        additions_price = 0
+        for addition in user_product.additions.all():
+            additions_price += addition.price * 100
+        transaction = Transaction(user=self.user, count=user_product.product.price * 100 + additions_price, restaurant=restaurant)
         transaction.save()
         last_transactions = Transaction.objects.filter(user=self.user).all()
         if last_transactions:
@@ -407,7 +413,7 @@ class BotAction:
             user_cards = Card.objects.filter(is_deleted=False, user=self.user).all()
             markup = types.InlineKeyboardMarkup(row_width=1)
             for user_card in user_cards:
-                markup.add(types.InlineKeyboardButton(f'{user_card.card_number}', callback_data=f'choicecard_{restaurant.pk}_{user_card.pk}_{transaction.pk}_{user_product.pk}'))
+                markup.add(types.InlineKeyboardButton(f'{user_card.card_number}', callback_data=f'choicecard_{restaurant.pk}_{user_card.pk}_{transaction.pk}'))
             markup.add(types.InlineKeyboardButton('Назад', callback_data=f'buyproduct_{restaurant.pk}_{user_product.product.pk}'))
             message_text = self.get_message_text('choice_card', 'Выберите карту для оплаты')
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
@@ -418,7 +424,7 @@ class BotAction:
                                        message_id=self.message.message_id)
             return self.user.step
 
-    def choice_card(self, restaurant_id, transaction_id, user_card_id, user_product_id):
+    def choice_card(self, restaurant_id, transaction_id, user_card_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
         user_product = TelegramUserProduct.objects.filter(pk=user_card_id)
         if transaction and user_product:
@@ -465,6 +471,7 @@ class BotAction:
         transaction = Transaction.objects.filter(pk=transaction_id).first()
 
         if transaction:
+
             try:
                 restaurant = Restaurant.objects.get(pk=restaurant_id)
             except Restaurant.DoesNotExist:

@@ -291,11 +291,10 @@ def inline_logic(c):
             rest_id = int(param[1])
             transaction_id = int(param[2])
             user_card_id = int(param[3])
-            user_product_id = int(param[4])
         except Exception as err:
             print(err)
             return
-        user.step = action.choice_card(rest_id, transaction_id, user_card_id, user_product_id)
+        user.step = action.choice_card(rest_id, transaction_id, user_card_id)
 
     user.save()
 
