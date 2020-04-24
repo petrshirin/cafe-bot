@@ -26,12 +26,14 @@ def get_payment_tinkoff(request, user_id=None):
         LOG.debug(data)
         transaction = Transaction.objects.filter(payment_id=data['PaymentId'], user__user_id=int(user_id)).first()
         if transaction:
-            if data['Status'] == 'CONFIRMED':
-                if not data['RebillID']:
+
+            if data.get('Status') == 'CONFIRMED':
+                if not data.get('RebillId'):
                     owner = transaction.restaurant.telegram_bot.owner
                     pay_system = PaySystem('Tinkoff', TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
                     cards = pay_system.get_user_cards(transaction.user)
                     request_card = None
+                    LOG.debug(cards)
                     for card in cards:
                         if Card.objects.filter(card_number=card['Pan']).first():
                             continue
@@ -41,11 +43,11 @@ def get_payment_tinkoff(request, user_id=None):
                         card = Card(user=transaction.user, rebill_id=data['RebillID'], card_number= request_card['Pan'])
                         card.save()
 
-            elif data['Status'] == 'PREAUTHORIZING':
+            elif data.get('Status') == 'PREAUTHORIZING':
                 transaction.status = 1
                 transaction.save()
 
-            elif data['Status'] == 'REJECTED' or data['Status'] == 'CANCELED' or data['Status'] == 'DEADLINE_EXPIRED':
+            elif data.get('Status') == 'REJECTED' or data.get('Status') == 'CANCELED' or data.get('Status') == 'DEADLINE_EXPIRED':
                 transaction.status = 3
                 transaction.save()
 
