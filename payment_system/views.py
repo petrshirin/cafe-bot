@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from ..bot_telegram.models import Transaction, Card, Owner, Restaurant
+from bot_telegram.models import Transaction, Card, Owner, Restaurant
 from django.http import HttpResponse
-from ..bot_telegram.pay_system import PaySystem
-from ..bot_telegram.pay_systems.Tinkoff import TinkoffPay
+from bot_telegram.pay_system import PaySystem
+from bot_telegram.pay_systems.Tinkoff import TinkoffPay
 # Create your views here.
 
 
