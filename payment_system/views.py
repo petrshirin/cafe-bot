@@ -10,7 +10,11 @@ import logging
 LOG = logging.getLogger(__name__)
 
 
-def get_payment_tinkoff(request):
+def get_payment_tinkoff(request, user_id=None):
+
+    if user_id is None:
+        LOG.error('invalid url to post')
+        return HttpResponse('fail', status=400)
 
     if request.method == 'POST':
         try:
@@ -19,8 +23,8 @@ def get_payment_tinkoff(request):
             LOG.error('error in parse json body')
             return HttpResponse('fail', status=400)
 
-        print(data)
-        transaction = Transaction.objects.filter(payment_id=data['PaymentId']).first()
+        LOG.debug(data)
+        transaction = Transaction.objects.filter(payment_id=data['PaymentId'], user__user_id=int(user_id)).first()
         if transaction:
             if data['Status'] == 'CONFIRMED':
                 if not data['RebillID']:
@@ -29,7 +33,7 @@ def get_payment_tinkoff(request):
                     cards = pay_system.get_user_cards(transaction.user)
                     request_card = None
                     for card in cards:
-                        if Card.objects.filter(card_number = card['Pan']).first():
+                        if Card.objects.filter(card_number=card['Pan']).first():
                             continue
                         else:
                             request_card = card

@@ -5,5 +5,5 @@ from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
 
-    path('Tinkoff/', csrf_exempt(get_payment_tinkoff), name='tinkoff'),
+    path('Tinkoff/<str:user_id>', csrf_exempt(get_payment_tinkoff), name='tinkoff'),
 ]
