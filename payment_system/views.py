@@ -3,13 +3,22 @@ from bot_telegram.models import Transaction, Card, Owner, Restaurant
 from django.http import HttpResponse
 from bot_telegram.pay_system import PaySystem
 from bot_telegram.pay_systems.Tinkoff import TinkoffPay
+import json
+import logging
 # Create your views here.
+
+LOG = logging.getLogger(__name__)
 
 
 def get_payment_tinkoff(request):
 
     if request.method == 'POST':
-        data = request.data
+        try:
+            data = json.loads(request.body, encoding='utf-8')
+        except json.JSONDecodeError:
+            LOG.error('error in parse json body')
+            return HttpResponse('fail', status=400)
+
         print(data)
         transaction = Transaction.objects.filter(payment_id=data['PaymentId']).first()
         if transaction:
