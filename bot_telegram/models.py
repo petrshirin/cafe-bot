@@ -109,7 +109,7 @@ class TelegramBasket(models.Model):
 class Card(models.Model):
     user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
     card_number = models.CharField(max_length=25, default=None, null=True, blank=True)
-    rebill_id = models.IntegerField(default=None, null=True, blank=True)
+    rebill_id = models.CharField(max_length=60, default=None, null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
 
 

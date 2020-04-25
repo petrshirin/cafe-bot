@@ -32,10 +32,7 @@ class PaySystem:
             if response:
                 transaction.payment_id = response['PaymentId']
                 transaction.status = 1
-                card = Card(user=user)
-                card.save()
                 transaction.url = response['PaymentURL']
-                transaction.card = card
                 transaction.is_parent = True
             else:
                 transaction.status = 3
@@ -51,9 +48,11 @@ class PaySystem:
 
             response = self.worker.do_pay(card.rebill_id, transaction.count, transaction.pk, "Cafe bot payment", user.user_id, user.telegramusersettings.email)
             if response:
+                transaction.card = card
                 transaction.payment_id = response['PaymentId']
                 transaction.status = 1
             else:
+                transaction.card = card
                 transaction.status = 3
             transaction.save()
             return transaction

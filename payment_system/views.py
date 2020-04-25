@@ -29,19 +29,14 @@ def get_payment_tinkoff(request, user_id=None):
 
             if data.get('Status') == 'CONFIRMED':
                 if not data.get('RebillId'):
-                    owner = transaction.restaurant.telegram_bot.owner
-                    pay_system = PaySystem('Tinkoff', TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
-                    cards = pay_system.get_user_cards(transaction.user)
-                    request_card = None
-                    LOG.debug(cards)
-                    for card in cards:
-                        if Card.objects.filter(card_number=card['Pan']).first():
-                            continue
-                        else:
-                            request_card = card
-                    if request_card and request_card['Status'] != 'I':
-                        card = Card(user=transaction.user, rebill_id=data['RebillID'], card_number= request_card['Pan'])
+                    card = Card.objects.filter(card_number=data.get['Pan'], is_deleted=False).first()
+                    if not card:
+                        card = Card(user=transaction.user, rebill_id=data['RebillId'], card_number=data['Pan'])
                         card.save()
+                    if not card.rebill_id:
+                        card.rebill_id = str(data.get('RebillId'))
+                    transaction.card = card
+                    transaction.save()
 
             elif data.get('Status') == 'PREAUTHORIZING':
                 transaction.status = 1
