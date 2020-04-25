@@ -49,6 +49,7 @@ class PaySystem:
             response = self.worker.do_pay(card.rebill_id, transaction.count, transaction.pk, "Cafe bot payment", user.user_id, user.telegramusersettings.email)
             if response:
                 transaction.card = card
+                print(response)
                 transaction.payment_id = response['PaymentId']
                 transaction.status = 1
             else:
