@@ -426,11 +426,11 @@ class BotAction:
 
     def choice_card(self, restaurant_id, transaction_id, user_card_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
-        user_product = TelegramUserProduct.objects.filter(pk=user_card_id)
-        if transaction and user_product:
-            transaction.products.add(user_product)
-            user_product.is_store = True
-            user_product.save()
+        user_card = TelegramUserProduct.objects.filter(pk=user_card_id).first()
+        if transaction:
+            for product in transaction.products.all():
+                product.is_store = True
+                product.save()
             try:
                 restaurant = Restaurant.objects.get(pk=restaurant_id)
             except Restaurant.DoesNotExist:
@@ -442,9 +442,8 @@ class BotAction:
             owner = restaurant.telegram_bot.owner
             payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
 
-            try:
-                card = Card.objects.get(pk=user_card_id)
-            except Card.DoesNotExist:
+            card = user_card
+            if not card:
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
                 markup.add(types.KeyboardButton('Корзина'), types.KeyboardButton('Заведения'))
                 markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
@@ -471,7 +470,6 @@ class BotAction:
         transaction = Transaction.objects.filter(pk=transaction_id).first()
 
         if transaction:
-
             try:
                 restaurant = Restaurant.objects.get(pk=restaurant_id)
             except Restaurant.DoesNotExist:
