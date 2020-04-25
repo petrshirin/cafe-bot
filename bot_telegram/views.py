@@ -289,8 +289,8 @@ def inline_logic(c):
         try:
             param = c.data.split('_')
             rest_id = int(param[1])
-            transaction_id = int(param[2])
-            user_card_id = int(param[3])
+            user_card_id = int(param[2])
+            transaction_id = int(param[3])
         except Exception as err:
             print(err)
             return
