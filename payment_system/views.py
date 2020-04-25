@@ -40,9 +40,9 @@ def get_payment_tinkoff(request, user_id=None):
                 transaction.status = 2
                 transaction.save()
                 bot = TeleBot(transaction.restaurant.telegram_bot.token)
-                manager = RestaurantManager.objects.filter(is_active=True, is_free=True).first()
+                manager = transaction.restaurant.managers.filter(is_active=True, is_free=True).first()
                 if not manager:
-                    manager = RestaurantManager.objects.filter(is_active=True).first()
+                    manager = transaction.restaurant.managers.filter(is_active=True).first()
                     if not manager:
                         bot.send_message(transaction.user.user_id, 'Оплата произведена, сейчас нет работающих менеджеров, '
                                                                    'Мы помним про ваш заказ, как только он освободится, вам придет оповещение')
