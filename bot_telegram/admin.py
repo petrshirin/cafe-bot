@@ -20,5 +20,6 @@ admin.site.register(UserSale)
 admin.site.register(Bonus)
 admin.site.register(TelegramBasket)
 admin.site.register(TelegramUserProduct)
+admin.site.register(Transaction)
 
 

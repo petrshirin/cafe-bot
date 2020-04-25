@@ -126,14 +126,32 @@ def inline_logic(c):
     elif c.data == 'basket':
         user.step = action.basket()
 
-    elif 'createpay_' in c.data:
+    elif 'cardrepeatanother_' in c.data:
         try:
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
             print(err)
             return None
-        user.step = action.create_pay(transaction_id)
+        user.step = action.card_repeat_another(transaction_id)
+
+    elif 'cardrepeatbonus_' in c.data:
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+        user.step = action.card_repeat_bonus(transaction_id)
+
+    elif 'cardrepeat_' in c.data:
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+        user.step = action.repeat_pay(transaction_id)
 
     elif 'mycard_' in c.data:
         try:
@@ -275,7 +293,7 @@ def inline_logic(c):
             return
         user.step = action.pay_card(rest_id, product_id)
 
-    elif 'productpayanouther_' in c.data:
+    elif 'productpayanother_' in c.data:
         try:
             param = c.data.split('_')
             rest_id = int(param[1])

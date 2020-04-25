@@ -138,14 +138,31 @@ class BotAction:
         transactions = Transaction.objects.filter(user=self.user, status=2, is_bonuses=False).all()
         markup = types.InlineKeyboardMarkup(row_width=1)
         for transaction in transactions:
-            markup.add(types.InlineKeyboardButton(f'{transaction.pk} {transaction.restaurant.name} {transaction.count / 100}руб.', callback_data=f'createpay_{transaction.pk}'))
+            markup.add(types.InlineKeyboardButton(f'{transaction.pk} {transaction.restaurant.name} {transaction.count / 100}руб.', callback_data=f'repeatpay_{transaction.pk}'))
         markup.add(types.InlineKeyboardButton('Назад', callback_data='basket'))
         message_text = self.get_message_text('basket_history', 'Ваша история заказов')
         self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                    text=message_text, reply_markup=markup)
         return self.user.step
 
-    def create_pay(self, transaction_id):
+    def repeat_pay(self, transaction_id):
+        transaction = Transaction.objects.filter(pk=transaction_id).first()
+        if not transaction:
+            message_text = self.get_message_text('invalid transaction', 'Транзакция устарела, закажите все товары заново')
+            self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
+                                       text=message_text)
+            return self.user.step
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(types.InlineKeyboardButton('Оплатить картой', callback_data=f'cardrepeat_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('Оплатить другой картой', callback_data=f'cardrepeatanother_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('Оплатить бонусами', callback_data=f'cardrepeatbonus_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('Вернуться к истории заказов', callback_data=f'basket_history'))
+        message_text = self.get_message_text('buyproduct', 'Выберите действие\n\n')
+        self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
+                                   text=message_text, reply_markup=markup)
+        return self.user.step
+
+    def card_repeat(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
         transaction = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
         transaction.save()
@@ -153,10 +170,48 @@ class BotAction:
         payment_system = PaySystem(transaction.restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
         transaction = payment_system.do_pay(self.user, transaction, transaction.card)
         transaction.save()
-        if transaction.status == 1:
+        if transaction.payment_id:
             self.bot.send_message(self.message.chat.id, "Заказ выполняется")
         else:
             self.bot.send_message(self.message.chat.id, "Произошла ошибка при заказе")
+        return self.user.step
+    
+    def card_repeat_another(self, transaction_id):
+        transaction = Transaction.objects.filter(pk=transaction_id).first()
+        transaction = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
+        transaction.save()
+
+        restaurant = transaction.restaurant
+
+        owner = restaurant.telegram_bot.owner
+        payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
+        transaction = payment_system.init_pay(self.user, transaction)
+
+        if transaction.url:
+            message_text = self.get_message_text('payment_link', 'Ваша ссылка на оплату\n\n{}\n').format(transaction.url)
+            self.bot.send_message(self.message.chat.id, message_text)
+        else:
+            message_text = self.get_message_text('init_payment_fail', 'Произошла ошибка при созании платежа, обратитесь к администратору')
+            self.bot.send_message(self.message.chat.id, message_text)
+        return self.user.step
+
+    def card_repeat_bonus(self, transaction_id):
+        transaction = Transaction.objects.filter(pk=transaction_id).first()
+        transaction = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
+        transaction.save()
+
+        restaurant = transaction.restaurant
+
+        payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay)
+        transaction.is_bonuses = True
+        try:
+            transaction = payment_system.init_pay(self.user, transaction)
+        except NotEnoughBonuses:
+            message_text = self.get_message_text('not_enough_bonuses', 'У вас недостаточно бонусов на счете, оплатите заказ картой')
+            self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
+                                       message_id=self.message.message_id)
+            return self.user.step
+        transaction.save()
         return self.user.step
 
     def restaurants(self):
@@ -338,7 +393,7 @@ class BotAction:
             if user_product:
                 markup.add(types.InlineKeyboardButton('Добавить в корзину и продолжить покупки', callback_data=f'addtobasket_{restaurant.pk}_{user_product.pk}'))
                 markup.add(types.InlineKeyboardButton('Оплатить картой', callback_data=f'productpay_{restaurant.pk}_{user_product.pk}'))
-                markup.add(types.InlineKeyboardButton('Оплатить другой картой', callback_data=f'productpayanouther_{restaurant.pk}_{user_product.pk}'))
+                markup.add(types.InlineKeyboardButton('Оплатить другой картой', callback_data=f'productpayanother_{restaurant.pk}_{user_product.pk}'))
                 markup.add(types.InlineKeyboardButton('Оплатить бонусами', callback_data=f'productbonuspay_{restaurant.pk}_{user_product.pk}'))
                 markup.add(types.InlineKeyboardButton('Перейти в корзину', callback_data=f'basket'))
                 markup.add(types.InlineKeyboardButton('Вернуться к продукту', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))

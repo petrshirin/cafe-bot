@@ -36,6 +36,7 @@ def get_payment_tinkoff(request, user_id=None):
                     if not card.rebill_id:
                         card.rebill_id = str(data.get('RebillId'))
                     transaction.card = card
+                    transaction.status = 2
                     transaction.save()
                     calculate_cash_back(transaction)
 
