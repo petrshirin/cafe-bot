@@ -3,6 +3,7 @@ from telebot import TeleBot, types
 from geopy import distance as geopy_distance
 from .menu_parser import *
 from .pay_system import *
+from django.db.models import Q
 
 
 class BotAction:
@@ -410,7 +411,7 @@ class BotAction:
         last_transactions = Transaction.objects.filter(user=self.user).all()
         if last_transactions:
             transaction.save()
-            user_cards = Card.objects.filter(is_deleted=False, user=self.user).all()
+            user_cards = Card.objects.filter(~Q(rebill_id=None), is_deleted=False, user=self.user).all()
             markup = types.InlineKeyboardMarkup(row_width=1)
             for user_card in user_cards:
                 markup.add(types.InlineKeyboardButton(f'{user_card.card_number}', callback_data=f'choicecard_{restaurant.pk}_{user_card.pk}_{transaction.pk}'))
@@ -426,7 +427,7 @@ class BotAction:
 
     def choice_card(self, restaurant_id, transaction_id, user_card_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
-        user_card = TelegramUserProduct.objects.filter(pk=user_card_id).first()
+        user_card = Card.objects.filter(pk=user_card_id).first()
         if transaction:
             for product in transaction.products.all():
                 product.is_store = True
