@@ -84,22 +84,23 @@ class TinkoffPay:
                 'RebillId': str(rebill_id),
                 'Token': '',
             }
-            body = self.do_sign(body)
             if email:
                 body['SendEmail'] = True
                 body['InfoEmail'] = email
+            body = self.do_sign(body)
+            print(body)
             res = requests.post('https://securepay.tinkoff.ru/v2/Charge', json=body)
             if res.ok:
                 res = res.json()
                 if res['Success'] is True:
                     return res
                 else:
-                    logging.error(res['ErrorCode'], res['Message'], res['Details'])
+                    logging.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
                     return None
             else:
                 try:
                     res = res.json()
-                    logging.error(res['ErrorCode'], res['Message'], res['Details'])
+                    logging.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
                 except json.JSONDecodeError:
                     pass
                 return None
@@ -107,7 +108,7 @@ class TinkoffPay:
         else:
             try:
                 res = res.json()
-                logging.error(res['ErrorCode'], res['Message'], res['Details'])
+                logging.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
             except json.JSONDecodeError:
                 pass
             return None
@@ -125,7 +126,11 @@ class TinkoffPay:
             res = res.json()
             return res
         else:
-            logging.error(res.json()['ErrorCode'], res.json()['Message'], res.json()['Details'])
+            try:
+                res = res.json()
+                logging.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
+            except json.JSONDecodeError:
+                pass
             return None
 
     def delete_user_card(self, user, card_id):
@@ -142,7 +147,11 @@ class TinkoffPay:
             res = res.json()
             return res
         else:
-            logging.error(res.json()['ErrorCode'], res.json()['Message'], res.json()['Details'])
+            try:
+                res = res.json()
+                logging.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
+            except json.JSONDecodeError:
+                pass
             return None
 
     def do_sign(self, body):
