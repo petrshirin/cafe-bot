@@ -87,10 +87,13 @@ class TinkoffPay:
                 body['InfoEmail'] = email
             body = self.do_sign(body)
             res = requests.post('https://securepay.tinkoff.ru/v2/Charge', json=body)
-
             if res.ok:
                 res = res.json()
-                return res
+                if res['Success'] is True:
+                    return res
+                else:
+                    logging.error(res.json()['ErrorCode'], res.json()['Message'], res.json()['Details'])
+                    return None
             else:
                 logging.error(res.json()['ErrorCode'], res.json()['Message'], res.json()['Details'])
                 return None

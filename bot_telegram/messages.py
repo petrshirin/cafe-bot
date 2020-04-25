@@ -364,9 +364,6 @@ class BotAction:
         user_product.save()
         return self.user.step
 
-    def calculate_sale(self):
-        pass
-
     def pay_another_card(self, restaurant_id, product_id):
         try:
             product = TelegramUserProduct.objects.get(pk=product_id)
@@ -374,7 +371,15 @@ class BotAction:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
             self.bot.send_message(chat_id=self.message.chat.id, text=message_text)
             return self.user.step
-        restaurant = Restaurant.objects.get(pk=restaurant_id)
+        try:
+            restaurant = Restaurant.objects.get(pk=restaurant_id)
+        except Restaurant.DoesNotExist:
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+            markup.add(types.KeyboardButton('Корзина'), types.KeyboardButton('Заведения'))
+            markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
+            self.bot.send_message(self.message.chat.id, 'Ресторан пропал, закажите в другом', reply_markup=markup)
+            return 0
+
         additions_price = 0
         for addition in product.additions.all():
             additions_price += addition.price * 100
@@ -442,7 +447,6 @@ class BotAction:
                 return 0
             owner = restaurant.telegram_bot.owner
             payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
-
             card = user_card
             if not card:
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
