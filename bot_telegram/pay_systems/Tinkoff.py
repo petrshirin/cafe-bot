@@ -1,6 +1,7 @@
 import requests
 from hashlib import sha256
 import logging
+import json
 
 
 class TinkoffPay:
@@ -76,30 +77,39 @@ class TinkoffPay:
 
         if res.ok:
             res = res.json()
+            print(res)
             body = {
                 'TerminalKey': self.terminal_key,
-                'PaymentId': res['PaymentId'],
-                'RebillId': rebill_id,
+                'PaymentId': str(res['PaymentId']),
+                'RebillId': str(rebill_id),
                 'Token': '',
             }
+            body = self.do_sign(body)
             if email:
                 body['SendEmail'] = True
                 body['InfoEmail'] = email
-            body = self.do_sign(body)
             res = requests.post('https://securepay.tinkoff.ru/v2/Charge', json=body)
             if res.ok:
                 res = res.json()
                 if res['Success'] is True:
                     return res
                 else:
-                    logging.error(res.json()['ErrorCode'], res.json()['Message'], res.json()['Details'])
+                    logging.error(res['ErrorCode'], res['Message'], res['Details'])
                     return None
             else:
-                logging.error(res.json()['ErrorCode'], res.json()['Message'], res.json()['Details'])
+                try:
+                    res = res.json()
+                    logging.error(res['ErrorCode'], res['Message'], res['Details'])
+                except json.JSONDecodeError:
+                    pass
                 return None
 
         else:
-            logging.error(res.json()['ErrorCode'], res.json()['Message'], res.json()['Details'])
+            try:
+                res = res.json()
+                logging.error(res['ErrorCode'], res['Message'], res['Details'])
+            except json.JSONDecodeError:
+                pass
             return None
 
     def get_user_card(self, user):
