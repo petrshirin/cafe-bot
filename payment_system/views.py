@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from bot_telegram.models import Transaction, Card, Owner, Restaurant
+from bot_telegram.models import Transaction, Card, Owner, Restaurant, UserSale
 from django.http import HttpResponse
 from bot_telegram.pay_system import PaySystem
 from bot_telegram.pay_systems.Tinkoff import TinkoffPay
@@ -37,6 +37,7 @@ def get_payment_tinkoff(request, user_id=None):
                         card.rebill_id = str(data.get('RebillId'))
                     transaction.card = card
                     transaction.save()
+                    calculate_cash_back(transaction)
 
             elif data.get('Status') == 'PREAUTHORIZING':
                 transaction.status = 1
@@ -50,4 +51,12 @@ def get_payment_tinkoff(request, user_id=None):
             return HttpResponse('fail transaction', status=401)
 
     return HttpResponse('ok', status=201)
+
+
+def calculate_cash_back(transaction):
+    user = transaction.user
+    user_cash_back_sale = UserSale.objects.filter(user=user, is_cash_back=True).first()
+    if user_cash_back_sale:
+        user.bonus.count += transaction.count * (1 - user_cash_back_sale.percent)
+        user.bonus.save()
 

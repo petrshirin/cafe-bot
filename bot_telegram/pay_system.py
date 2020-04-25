@@ -15,7 +15,16 @@ class PaySystem:
         else:
             self.worker = None
 
+    @staticmethod
+    def calculate_sale(user, transaction):
+        user_sales = UserSale.objects.filter(user=user).all()
+        for user_sale in user_sales:
+            if user_sale.is_cash_back:
+                transaction.count = transaction.count * (1-user_sale.percent)
+        transaction.save()
+
     def init_pay(self, user, transaction):
+        self.calculate_sale(user, transaction)
         if transaction.is_bonuses:
             if user.bonus.count * 100 >= transaction.count:
                 user.bonus -= transaction.count
@@ -40,6 +49,7 @@ class PaySystem:
             return transaction
 
     def do_pay(self, user, transaction, card):
+        self.calculate_sale(user, transaction)
         if transaction.is_bonuses:
             if user.bonus.count * 100 >= transaction.count:
                 user.bonus -= transaction.count

@@ -130,6 +130,9 @@ class Sale(models.Model):
     description = NonStrippingTextField(default="Обычная скидка")
     count_transaction = models.IntegerField(default=999999)
     base_sale = models.BooleanField()
+    is_cash_back = models.BooleanField()
+    percent = models.FloatField(default=0.1)
+    is_active = models.BooleanField(default=True)
 
 
 class UserSale(models.Model):
@@ -168,7 +171,7 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         TelegramUserSettings.objects.create(user=instance)
         TelegramBasket.objects.create(user=instance)
-        sales = Sale.objects.filter(base_sale=True, bot=instance.telegram_bot).all()
+        sales = Sale.objects.filter(base_sale=True, bot=instance.telegram_bot, is_active=True).all()
         for sale in sales:
             UserSale.objects.create(user=instance, sale=sale)
 
@@ -188,6 +191,23 @@ def create_owner_settings(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Owner)
 def save_owner_settings(sender, instance, **kwargs):
     instance.ownersettings.save()
+
+
+@receiver(post_save, sender=Sale)
+def control_user_sales(sender, instance, created, **kwargs):
+    if created:
+        users = User.objects.filter(telegram_bot=instance.bot).all()
+        if instance.base_sale and instance.is_active:
+            for user in users:
+                user_sale = UserSale.objects.filter(user=user, sale=instance).first()
+                if not user_sale:
+                    user_sale = UserSale(user=user, sale=instance)
+                    user_sale.save()
+        if not instance.is_active:
+            for user in users:
+                user_sale = UserSale.objects.filter(user=user, sale=instance).first()
+                if user_sale:
+                    user_sale.delete()
 
 
 
