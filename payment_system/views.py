@@ -1,10 +1,11 @@
 from django.shortcuts import render
-from bot_telegram.models import Transaction, Card, Owner, Restaurant, UserSale
+from bot_telegram.models import Transaction, Card, Owner, Restaurant, UserSale, RestaurantManager
 from django.http import HttpResponse
 from bot_telegram.pay_system import PaySystem
 from bot_telegram.pay_systems.Tinkoff import TinkoffPay
 import json
 import logging
+from telebot import TeleBot, types
 # Create your views here.
 
 LOG = logging.getLogger(__name__)
@@ -36,9 +37,28 @@ def get_payment_tinkoff(request, user_id=None):
                     if not card.rebill_id:
                         card.rebill_id = str(data.get('RebillId'))
                     transaction.card = card
-                    transaction.status = 2
-                    transaction.save()
-                    calculate_cash_back(transaction)
+                transaction.status = 2
+                transaction.save()
+                bot = TeleBot(transaction.restaurant.telegram_bot.token)
+                manager = RestaurantManager.objects.filter(is_active=True, is_free=True).first()
+                if not manager:
+                    manager = RestaurantManager.objects.filter(is_active=True).first()
+                    if not manager:
+                        bot.send_message(transaction.user.user_id, 'Оплата произведена, сейчас нет работающих менеджеров, '
+                                                                   'Мы помним про ваш заказ, как только он освободится, вам придет оповещение')
+                        return HttpResponse('ok', status=201)
+
+                message_text = f'Заказ №{transaction.pk}\n\n'
+                for product in transaction.products.all():
+                    i = 1
+                    message_text += f'{product.product.name} {product.product.valume}{product.product.unit}\n'
+                    for addition in product.additions.all():
+                        message_text += f'{i}. {addition.name}\n'
+                    message_text += '\n'
+                markup = types.InlineKeyboardMarkup(row_width=1)
+                markup.add(types.InlineKeyboardButton('Принять заказ', callback_data=f'acceptorder_{transaction.pk}'))
+                bot.send_message(manager.user_id, message_text, reply_markup=markup)
+                calculate_cash_back(transaction)
 
             elif data.get('Status') == 'PREAUTHORIZING':
                 transaction.status = 1

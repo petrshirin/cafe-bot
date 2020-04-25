@@ -49,6 +49,7 @@ class TelegramMessage(models.Model):
     bot = models.ForeignKey(TelegramBot, on_delete=models.CASCADE, default=None, null=True)
 
 
+
 class Addition(models.Model):
     name = models.CharField(max_length=255)
     price = models.IntegerField()
@@ -65,11 +66,19 @@ class RestaurantMenu(models.Model):
     additions = models.ManyToManyField(Addition, null=True, blank=True)
 
 
+class RestaurantManager(models.Model):
+    name = models.CharField(max_length=255)
+    user_id = models.IntegerField()
+    is_active = models.BooleanField(default=False)
+    is_free = models.BooleanField(default=True)
+
+
 class Restaurant(models.Model):
     name = models.CharField(max_length=255)
     telegram_bot = models.ForeignKey(TelegramBot, on_delete=models.CASCADE)
     menu_struct = JSONField()
     products = models.ManyToManyField(RestaurantMenu, default=None, null=True)
+    managers = models.ManyToManyField(RestaurantManager, blank=True, default=None)
 
 
 class RestaurantSettings(models.Model):
@@ -142,10 +151,13 @@ class UserSale(models.Model):
 
 class Transaction(models.Model):
     """
-    0 - created
-    1 - processing
-    2 - confirmed
+    0 - created pay
+    1 - processing pay
+    2 - confirmed pay
     3 - canceled
+    4 - in queue
+    5 - confirmed order
+    6 - non reserved order
     """
     user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
     card = models.ForeignKey(Card, on_delete=models.CASCADE, default=None, blank=True, null=True)

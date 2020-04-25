@@ -96,6 +96,17 @@ def inline_logic(c):
     print(c.data)
     user = TelegramUser.objects.get(user_id=c.message.chat.id)
     action = BotAction(bot, c.message, user)
+
+    if 'acceptorder_' in c.data:
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+
+        user.step = action.accept_order(transaction_id)
+
     if c.data == "nearest_restaurants":
         user.step = action.send_location()
 

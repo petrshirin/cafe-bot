@@ -20,12 +20,22 @@ class BotAction:
         else:
             return message_to_send.text
 
+    def accept_order(self, transaction_id):
+        transaction = Transaction.objects.filter(pk=transaction_id).first()
+        if not transaction:
+            pass
+        message_text_user = self.get_message_text('accept_order', 'Заказ принят в обработку')
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(types.InlineKeyboardButton('Завершить заказ', callback_data=f'confirm_order'))
+        self.bot.edit_message_text(user_id=self.user.user_id, text=self.message.text, message_id=self.message.message_id, reply_markup=markup)
+        self.bot.send_message(transaction.user.user_id, message_text_user)
+        return self.user.step
+
     def main_menu(self):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
         markup.add(types.KeyboardButton('Корзина'), types.KeyboardButton('Заведения'))
         markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
         message_text = self.get_message_text('main_menu', 'Главное меню')
-        print(self.bot.token)
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
 
         return 1
@@ -110,6 +120,9 @@ class BotAction:
         sale = UserSale.objects.filter(pk=user_sale_id).first()
         if sale:
             message_text = f'{sale.sale.name}\n\n{sale.sale.description}'
+            if sale.is_cash_back:
+                message_text += f'\n\nСейчас у вас {self.user.bonus.count} бонусов'
+                markup.add(types.InlineKeyboardButton('Потратить', callback_data='all_restaurants'))
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
                                        message_id=self.message.message_id, reply_markup=markup)
             return self.user.step
@@ -135,7 +148,7 @@ class BotAction:
         return self.basket()
 
     def basket_history(self):
-        transactions = Transaction.objects.filter(user=self.user, status=2, is_bonuses=False).all()
+        transactions = Transaction.objects.filter(user=self.user, status=6, is_bonuses=False).all()
         markup = types.InlineKeyboardMarkup(row_width=1)
         for transaction in transactions:
             markup.add(types.InlineKeyboardButton(f'{transaction.pk} {transaction.restaurant.name} {transaction.count / 100}руб.', callback_data=f'repeatpay_{transaction.pk}'))
