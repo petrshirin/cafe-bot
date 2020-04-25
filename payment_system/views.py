@@ -29,7 +29,7 @@ def get_payment_tinkoff(request, user_id=None):
 
             if data.get('Status') == 'CONFIRMED':
                 if data.get('RebillId'):
-                    card = Card.objects.filter(card_number=data.get['Pan'], is_deleted=False).first()
+                    card = Card.objects.filter(card_number=data['Pan'], is_deleted=False, user=transaction.user).first()
                     if not card:
                         card = Card(user=transaction.user, rebill_id=data['RebillId'], card_number=data['Pan'])
                         card.save()
