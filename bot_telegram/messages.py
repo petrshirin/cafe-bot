@@ -131,7 +131,7 @@ class BotAction:
         sale = UserSale.objects.filter(pk=user_sale_id).first()
         if sale:
             message_text = f'{sale.sale.name}\n\n{sale.sale.description}'
-            if sale.is_cash_back:
+            if sale.sale.is_cash_back:
                 message_text += f'\n\nСейчас у вас {self.user.bonus.count} бонусов'
                 markup.add(types.InlineKeyboardButton('Потратить', callback_data='all_restaurants'))
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
