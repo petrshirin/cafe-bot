@@ -148,7 +148,8 @@ class BotAction:
             markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume} ({product.product.price})', callback_data=f'productbasket_{product.id}'))
         markup.add(types.InlineKeyboardButton('Отчистить корзину', callback_data='clear_basket'),
                    types.InlineKeyboardButton('История заказов', callback_data='basket_history'))
-        markup.add(types.InlineKeyboardButton('Главное меню', callback_data='main_menu'))
+        markup.add(types.InlineKeyboardButton('Завершить текущий заказ', callback_data='complete_current_order'),
+                   types.InlineKeyboardButton('Главное меню', callback_data='main_menu'))
         message_text = self.get_message_text('basket', 'Ваша корзина\n\n выберите продукт для подробной информации')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
         return 7
@@ -169,8 +170,73 @@ class BotAction:
                                    text=message_text, reply_markup=markup)
         return self.user.step
 
+    def complete_current_order(self):
+        user_products = TelegramUserProduct.objects.filter(is_basket=True, is_store=False, user=self.user).all()
+        count = 0
+        transaction = Transaction(user=self.user, restaurant=user_products[0].restaurant)
+        transaction.save()
+        for user_product in user_products:
+            transaction.products.add(user_product)
+            count += user_product.product.price
+            for addition in user_product.additions:
+                count += addition.price
+        transaction.count = count
+        transaction.save()
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(types.InlineKeyboardButton('Оплатить картой', callback_data=f'cardcompleteorder_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('Оплатить другой картой', callback_data=f'cardcompleteanotherorder_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('Оплатить бонусами', callback_data=f'cardcompletebonusorder_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('В карзину', callback_data=f'basket'))
+        message_text = self.get_message_text('buyproduct', 'Выберите действие\n\n')
+        self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
+                                   text=message_text, reply_markup=markup)
+        return self.user.step
+
+    def card_complete_order(self, transaction_id):
+        transaction = Transaction.objects.filter(pk=transaction_id).first()
+
+        user_cards = Card.objects.filter(~Q(rebill_id=None), is_deleted=False, user=self.user).all()
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        for user_card in user_cards:
+            markup.add(types.InlineKeyboardButton(f'{user_card.card_number}', callback_data=f'choicecard_{transaction.restaurant.pk}_{user_card.pk}_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('Назад', callback_data=f'complete_current_order'))
+        message_text = self.get_message_text('choice_card', 'Выберите карту для оплаты')
+        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
+                                   message_id=self.message.message_id, reply_markup=markup)
+        return self.user.step
+
+    def card_complete_order_another(self, transaction_id):
+        transaction = Transaction.objects.filter(pk=transaction_id).first()
+        restaurant = transaction.restaurant
+
+        for user_product in transaction.products.all():
+            user_product.is_store = True
+            user_product.save()
+
+        owner = restaurant.telegram_bot.owner
+        payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
+        transaction = payment_system.init_pay(self.user, transaction)
+
+        if transaction.url:
+            message_text = self.get_message_text('payment_link', 'Ваша ссылка на оплату\n\n{}\n').format(transaction.url)
+            self.bot.send_message(self.message.chat.id, message_text)
+        else:
+            message_text = self.get_message_text('init_payment_fail', 'Произошла ошибка при созании платежа, обратитесь к администратору')
+            self.bot.send_message(self.message.chat.id, message_text)
+        return self.user.step
+
+    def card_complete_order_bonus(self, transaction_id):
+        transaction = Transaction.objects.filter(pk=transaction_id).first()
+
     def repeat_pay(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
+        count = 0
+        for product in transaction.products.all():
+            count += product.product.price
+            for addition in product.additions.all():
+                count += addition.price
+        transaction.count = count
+
         if not transaction:
             message_text = self.get_message_text('invalid transaction', 'Транзакция устарела, закажите все товары заново')
             self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
@@ -199,7 +265,7 @@ class BotAction:
         else:
             self.bot.send_message(self.message.chat.id, "Произошла ошибка при заказе")
         return self.user.step
-    
+
     def card_repeat_another(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
         transaction = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
@@ -235,6 +301,28 @@ class BotAction:
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
                                        message_id=self.message.message_id)
             return self.user.step
+        message_text = self.get_message_text('complete_order_bonus', 'Заказ оплачен бонусами')
+        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
+                                   message_id=self.message.message_id)
+        transaction.status = 2
+        manager = transaction.restaurant.managers.filter(is_active=True, is_free=True).first()
+        if not manager:
+            manager = transaction.restaurant.managers.filter(is_active=True).first()
+            if not manager:
+                self.bot.send_message(transaction.user.user_id, 'Оплата произведена, сейчас нет работающих менеджеров, '
+                                                                'Мы помним про ваш заказ, как только он освободится, вам придет оповещение')
+                transaction.status = 6
+
+        message_text = f'Заказ №{transaction.pk}\n\n'
+        for product in transaction.products.all():
+            i = 1
+            message_text += f'{product.product.name} {product.product.valume}{product.product.unit}\n'
+            for addition in product.additions.all():
+                message_text += f'{i}. {addition.name}\n'
+            message_text += '\n'
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(types.InlineKeyboardButton('Принять заказ', callback_data=f'acceptorder_{transaction.pk}'))
+        self.bot.send_message(manager.user_id, message_text, reply_markup=markup)
         transaction.save()
         return self.user.step
 
@@ -341,7 +429,7 @@ class BotAction:
             user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
                                                               is_basket=False, is_store=False).first()
             if not user_product:
-                user_product = TelegramUserProduct(user=self.user, product=product_orm, is_basket=False, is_store=False)
+                user_product = TelegramUserProduct(user=self.user, product=product_orm, is_basket=False, is_store=False, restaurant=restaurant)
                 user_product.save()
             message_text = self.get_message_text('product', 'Вы выбрали: {}')
             message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price}₽\n\n{product_orm.description}')
@@ -395,8 +483,8 @@ class BotAction:
         for addition in user_product.product.additions.all():
             addition_orm = Addition.objects.filter(pk=addition.id).first()
             if addition_orm and addition_orm not in all_user_additions:
-                    count_additions += 1
-                    markup.add(types.InlineKeyboardButton(f'{addition_orm.name} ({addition_orm.price}₽)', callback_data=f'additionadd_{restaurant.pk}_{user_product.pk}_{addition_orm.pk}'))
+                count_additions += 1
+                markup.add(types.InlineKeyboardButton(f'{addition_orm.name} ({addition_orm.price}₽)', callback_data=f'additionadd_{restaurant.pk}_{user_product.pk}_{addition_orm.pk}'))
         markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
 
         message_text = f'{addition.name} добавлен\n'
@@ -571,5 +659,27 @@ class BotAction:
                 self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
                                            message_id=self.message.message_id)
                 return self.user.step
+            message_text = self.get_message_text('complete_order_bonus', 'Заказ оплачен бонусами')
+            self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
+                                       message_id=self.message.message_id)
+            transaction.status = 2
+            manager = transaction.restaurant.managers.filter(is_active=True, is_free=True).first()
+            if not manager:
+                manager = transaction.restaurant.managers.filter(is_active=True).first()
+                if not manager:
+                    self.bot.send_message(transaction.user.user_id, 'Оплата произведена, сейчас нет работающих менеджеров, '
+                                                                    'Мы помним про ваш заказ, как только он освободится, вам придет оповещение')
+                    transaction.status = 6
+
+            message_text = f'Заказ №{transaction.pk}\n\n'
+            for product in transaction.products.all():
+                i = 1
+                message_text += f'{product.product.name} {product.product.valume}{product.product.unit}\n'
+                for addition in product.additions.all():
+                    message_text += f'{i}. {addition.name}\n'
+                message_text += '\n'
+            markup = types.InlineKeyboardMarkup(row_width=1)
+            markup.add(types.InlineKeyboardButton('Принять заказ', callback_data=f'acceptorder_{transaction.pk}'))
+            self.bot.send_message(manager.user_id, message_text, reply_markup=markup)
             transaction.save()
             return self.user.step

@@ -137,6 +137,22 @@ def inline_logic(c):
     elif c.data == 'basket':
         user.step = action.basket()
 
+    elif c.data == 'complete_current_order':
+        user.step = action.complete_current_order()
+
+    elif c.data == 'cardcompleteorder_':
+        pass
+
+    elif 'repeatpay_' in c.data:
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+
+        user.step = action.repeat_pay(transaction_id)
+
     elif 'cardrepeatanother_' in c.data:
         try:
             param = c.data.split('_')

@@ -105,6 +105,7 @@ class TelegramUser(models.Model):
 class TelegramUserProduct(models.Model):
     user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
     product = models.ForeignKey(RestaurantMenu, on_delete=models.CASCADE)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, default=None)
     additions = models.ManyToManyField(Addition, null=True, blank=True)
     is_basket = models.BooleanField(default=False)
     is_store = models.BooleanField(default=False)
