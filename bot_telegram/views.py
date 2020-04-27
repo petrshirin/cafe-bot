@@ -140,7 +140,7 @@ def inline_logic(c):
     elif c.data == 'complete_current_order':
         user.step = action.complete_current_order()
 
-    elif c.data == 'cardcompleteorder_':
+    elif 'cardcompleteorder_' in c.data:
         try:
             param = c.data.split('_')
             transaction_id = int(param[1])
@@ -149,7 +149,7 @@ def inline_logic(c):
             return None
         user.step = action.card_complete_order(transaction_id)
 
-    elif c.data == 'cardcompleteanotherorder_':
+    elif 'cardcompleteanotherorder_' in c.data:
         try:
             param = c.data.split('_')
             transaction_id = int(param[1])
@@ -158,7 +158,7 @@ def inline_logic(c):
             return None
         user.step = action.card_complete_order_another(transaction_id)
 
-    elif c.data == 'cardcompletebonusorder_':
+    elif 'cardcompletebonusorder_' in c.data:
         try:
             param = c.data.split('_')
             transaction_id = int(param[1])
