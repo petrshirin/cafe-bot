@@ -390,7 +390,7 @@ class BotAction:
         offset_menu = page * 5
         menu = rest_category
         max_pages = int((len(menu.products) + len(menu.categories)) / 5) if ((len(menu.products) + len(menu.categories)) % 5 == 0) else int((len(menu.products) + len(menu.categories)) / 5 + 1)
-        next_page = (page + 1) if (page + 1 < max_pages) else max_pages - 1
+        next_page = (page + 1) if (page + 1 < max_pages) else 0
         previous_page = (page - 1) if (page - 1 > 0) else max_pages - 1
         all_items = menu.products + menu.categories
         print(len(menu.products) + len(menu.categories))
@@ -419,7 +419,7 @@ class BotAction:
         menu = struct
         offset_menu = page * 5
         max_pages = int(len(menu.products) / 5) if (len(menu.products) % 5 == 0) else int(len(menu.products) / 5 + 1)
-        next_page = (page + 1) if (page + 1 < max_pages) else max_pages - 1
+        next_page = (page + 1) if (page + 1 < max_pages) else 0
         previous_page = (page - 1) if (page - 1 > 0) else max_pages - 1
         markup = types.InlineKeyboardMarkup(row_width=3)
         for i in range(offset_menu, offset_menu + 5):
