@@ -49,10 +49,12 @@ class TelegramMessage(models.Model):
     bot = models.ForeignKey(TelegramBot, on_delete=models.CASCADE, default=None, null=True)
 
 
-
 class Addition(models.Model):
     name = models.CharField(max_length=255)
     price = models.IntegerField()
+
+    def __str__(self):
+        return f'{self.pk}. {self.name} ({self.price}руб.)'
 
 
 class RestaurantMenu(models.Model):
@@ -64,6 +66,9 @@ class RestaurantMenu(models.Model):
     price = models.IntegerField()
     cooking_time = models.DurationField()
     additions = models.ManyToManyField(Addition, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.pk}. {self.name} {self.volume}{self.unit}. ({self.price}руб.)'
 
 
 class RestaurantManager(models.Model):
