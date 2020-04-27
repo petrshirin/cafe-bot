@@ -5,7 +5,6 @@ from .menu_parser import *
 from .pay_system import *
 from django.db.models import Q
 
-
 class BotAction:
 
     def __init__(self, bot, message, user):
@@ -406,9 +405,9 @@ class BotAction:
             if j == 5:
                 break
 
-        markup.add(types.InlineKeyboardButton(f'{previous_page + 1}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'),
-                   types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{rest_category.previous_id}_0'),
-                   types.InlineKeyboardButton(f'{next_page + 1}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'))
+        markup.add(types.InlineKeyboardButton(f'{previous_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'),
+                   types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
+                   types.InlineKeyboardButton(f'{next_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{next_page}'))
         message_text = self.get_message_text('category', 'Выберите категорию или товар')
         self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                    text=message_text, reply_markup=markup)
@@ -523,14 +522,14 @@ class BotAction:
                 markup.add(types.InlineKeyboardButton('Перейти в корзину', callback_data=f'basket'))
                 markup.add(types.InlineKeyboardButton('Вернуться к продукту', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
                 message_text = self.get_message_text('buyproduct', 'Выберите действие')
-                self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+                self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
             else:
                 message_text = self.get_message_text('invalid_user_product', 'Вы не можете выбрать этот продукт')
-                self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+                self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
 
         else:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
-            self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id)
+            self.bot.send_message(chat_id=self.message.chat.id, text=message_text)
         return self.user.step
 
     def add_to_basket(self, restaurant_id, user_product):

@@ -1,0 +1,661 @@
+{
+  "additions": [
+    {
+      "id": 1,
+      "name": "Ваниль",
+      "price": 20
+    },
+    {
+      "id": 2,
+      "name": "Карамель",
+      "price": 20
+    }
+  ],
+  "products": null,
+  "id": 0,
+  "categories": [
+    {
+      "id": 1,
+      "name": "Кофе",
+      "products": null,
+      "categories": [
+        {
+          "id": 7,
+          "name": "Американо",
+          "products": [
+            {
+              "id": 11,
+              "name": "Американо",
+              "description": "Американо",
+              "volume": "250",
+              "unit": "мл",
+              "price": 100,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 14,
+              "name": "Американо",
+              "description": "Американо",
+              "volume": "350",
+              "unit": "мл",
+              "price": 120,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "name": "Капучино",
+          "products": [
+            {
+              "id": 12,
+              "name": "Капучино",
+              "description": "Капучино",
+              "volume": "250",
+              "unit": "мл",
+              "price": 130,
+              "time_cooking": "00:30:00",
+              "additions": null
+            },
+            {
+              "id": 13,
+              "name": "Капучино",
+              "price": 150,
+              "description": "Капучино",
+              "volume": "350",
+              "unit": "мл",
+              "time_cooking": "00:20:00",
+              "additions": null
+            },
+            {
+              "id": 15,
+              "name": "Капучино",
+              "price": 180,
+              "description": "Капучино",
+              "volume": "500",
+              "unit": "мл",
+              "time_cooking": "00:20:00",
+              "additions": null
+            }
+          ]
+        },
+        {
+          "id": 9,
+          "name": "Латте",
+          "products": [
+            {
+              "id": 16,
+              "name": "Латте",
+              "description": "Капучино",
+              "volume": "250",
+              "unit": "мл",
+              "price": 130,
+              "time_cooking": "00:30:00",
+              "additions": null
+            },
+            {
+              "id": 17,
+              "name": "Латте",
+              "price": 150,
+              "description": "Капучино",
+              "volume": "350",
+              "unit": "мл",
+              "time_cooking": "00:20:00",
+              "additions": null
+            },
+            {
+              "id": 18,
+              "name": "Латте",
+              "price": 180,
+              "description": "Капучино",
+              "volume": "500",
+              "unit": "мл",
+              "time_cooking": "00:20:00",
+              "additions": null
+            }
+          ]
+        },
+        {
+          "id": 10,
+          "name": "Раф",
+          "products": [
+            {
+              "id": 19,
+              "name": "Раф",
+              "price": 150,
+              "description": "Капучино",
+              "volume": "250",
+              "unit": "мл",
+              "time_cooking": "00:20:00",
+              "additions": null
+            },
+            {
+              "id": 20,
+              "name": "Раф",
+              "price": 170,
+              "description": "Капучино",
+              "volume": "500",
+              "unit": "мл",
+              "time_cooking": "00:20:00",
+              "additions": null
+            }
+          ]
+        },
+        {
+          "id": 11,
+          "name": "Флэт уайт",
+          "products": [
+            {
+              "id": 21,
+              "name": "Флэт уайт",
+              "price": 140,
+              "description": "Капучино",
+              "volume": "250",
+              "unit": "мл",
+              "time_cooking": "00:20:00",
+              "additions": null
+            },
+            {
+              "id": 22,
+              "name": "Флэт уайт",
+              "price": 170,
+              "description": "Капучино",
+              "volume": "350",
+              "unit": "мл",
+              "time_cooking": "00:20:00",
+              "additions": null
+            }
+          ]
+        }
+        ]
+    },
+    {
+      "id": 2,
+      "name": "Чай",
+      "products": [
+        {
+          "id": 23,
+          "name": "Лаф чай",
+          "description": "Лаф чай",
+          "volume": "350",
+          "unit": "мл",
+          "price": 140,
+          "time_cooking": "01:00:00",
+          "additions": null
+        },
+        {
+          "id": 24,
+          "name": "Дип чай",
+          "description": "Дип чай",
+          "volume": "350",
+          "unit": "мл",
+          "price": 140,
+          "time_cooking": "01:00:00",
+          "additions": null
+        },
+        {
+          "id": 25,
+          "name": "Фру чай",
+          "description": "Фру чай",
+          "volume": "350",
+          "unit": "мл",
+          "price": 140,
+          "time_cooking": "01:00:00",
+          "additions": null
+        }
+      ],
+      "categories": [
+        {
+          "id": 12,
+          "name": "Матча латте",
+          "products": [
+            {
+              "id": 27,
+              "name": "Матча латте",
+              "description": "Матча латте",
+              "volume": "250",
+              "unit": "мл",
+              "price": 160,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 26,
+              "name": "Матча латте",
+              "description": "Матча латте",
+              "volume": "350",
+              "unit": "мл",
+              "price": 180,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Горячие напитки",
+      "products": [
+        {
+          "id": 30,
+          "name": "Вунш-Пунш",
+          "description": "Вунш-Пунш",
+          "volume": "350",
+          "unit": "мл",
+          "price": 160,
+          "time_cooking": "01:00:00",
+          "additions": null
+        }
+      ],
+      "categories": [
+        {
+          "id": 13,
+          "name": "Горячий шоколад",
+          "products": [
+            {
+              "id": 28,
+              "name": "Горячий шоколад",
+              "description": "Горячий шоколад",
+              "volume": "250",
+              "unit": "мл",
+              "price": 100,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 29,
+              "name": "Горячий шоколад",
+              "description": "Горячий шоколад",
+              "volume": "350",
+              "unit": "мл",
+              "price": 120,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Холодные напитки",
+      "products": [
+        {
+              "id": 31,
+              "name": "Морс клюква",
+              "description": "Морс клюква",
+              "volume": "250",
+              "unit": "мл",
+              "price": 80,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 32,
+              "name": "Морс облепиха",
+              "description": "Морс облепиха",
+              "volume": "250",
+              "unit": "мл",
+              "price": 80,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 33,
+              "name": "Сок Яблочный",
+              "description": "Сок Яблочный",
+              "volume": "250",
+              "unit": "мл",
+              "price": 100,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 34,
+              "name": "Сок Апельсиновый",
+              "description": "Сок Апельсиновый",
+              "volume": "250",
+              "unit": "мл",
+              "price": 100,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 35,
+              "name": "Сок Грейпфрутовый",
+              "description": "Сок Грейпфрутовый",
+              "volume": "250",
+              "unit": "мл",
+              "price": 100,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 36,
+              "name": "Сок вишнеый",
+              "description": "Сок вишнеый",
+              "volume": "250",
+              "unit": "мл",
+              "price": 100,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Еда",
+      "products": [
+        {
+              "id": 37,
+              "name": "Шаверма с копченой курицей",
+              "description": "Шаверма с копченой курицей",
+              "volume": "250",
+              "unit": "г",
+              "price": 200,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 38,
+              "name": "Лапша с курицей и овощами WOK",
+              "description": "Лапша с курицей и овощами WOK",
+              "volume": "300",
+              "unit": "г",
+              "price": 200,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 39,
+              "name": "Гонконгская вафля сытная",
+              "description": "Гонконгская вафля сытная",
+              "volume": "290",
+              "unit": "г",
+              "price": 200,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 40,
+              "name": "Панини с курицей",
+              "description": "Панини с курицей",
+              "volume": "250",
+              "unit": "г",
+              "price": 200,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 41,
+              "name": "Клаб сэндвич",
+              "description": "Клаб сэндвич",
+              "volume": "230",
+              "unit": "г",
+              "price": 190,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 42,
+              "name": "Ролл Фитнес лайт",
+              "description": "Ролл Фитнес лайт",
+              "volume": "140",
+              "unit": "г",
+              "price": 170,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 43,
+              "name": "Запеченная курица с картофельным пюре",
+              "description": "Запеченная курица с картофельным пюре",
+              "volume": "230",
+              "unit": "г",
+              "price": 200,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 44,
+              "name": "Крем-суп из горошка с мятой",
+              "description": "Крем-суп из горошка с мятой",
+              "volume": "140",
+              "unit": "г",
+              "price": 200,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+      ],
+      "categories": [
+        {
+          "id": 14,
+          "name": "КИШ",
+          "products": [
+            {
+              "id": 45,
+              "name": "КИШ Рыба",
+              "description": "КИШ Рыба",
+              "volume": "250",
+              "unit": "г",
+              "price": 150,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 46,
+              "name": "КИШ Ветчина и сыр",
+              "description": "КИШ Ветчина и сыр",
+              "volume": "250",
+              "unit": "г",
+              "price": 150,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 47,
+              "name": "КИШ овощи",
+              "description": "КИШ овощи",
+              "volume": "250",
+              "unit": "г",
+              "price": 150,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Десерт",
+      "products": [
+        {
+          "id": 54,
+          "name": "Чизкейк",
+          "description": "Чизкейк",
+          "volume": "90",
+          "unit": "г",
+          "price": 140,
+          "time_cooking": "01:00:00",
+          "additions": null
+        }
+      ],
+      "categories": [
+        {
+          "id": 15,
+          "name": "Сырники",
+          "products": [
+            {
+              "id": 48,
+              "name": "Сырники со сметаной",
+              "description": "Сырники со сметаной",
+              "volume": "160",
+              "unit": "г",
+              "price": 140,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 49,
+              "name": "Сырники со сгущенкой",
+              "description": "Сырники со сгущенкой",
+              "volume": "160",
+              "unit": "г",
+              "price": 140,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 50,
+              "name": "Сырники со вареньем",
+              "description": "Сырники со вареньем",
+              "volume": "160",
+              "unit": "г",
+              "price": 150,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+          ]
+        },
+        {
+          "id": 16,
+          "name": "Донат",
+          "products": [
+            {
+              "id": 51,
+              "name": "Донат с карамелью",
+              "description": "Донат с карамелью",
+              "volume": "160",
+              "unit": "г",
+              "price": 80,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 52,
+              "name": "Донат с клубникой",
+              "description": "Донат с клубникой",
+              "volume": "160",
+              "unit": "г",
+              "price": 80,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 53,
+              "name": "Сырники с ванилью",
+              "description": "Сырники с ванилью",
+              "volume": "160",
+              "unit": "г",
+              "price": 80,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+          ]
+        },
+        {
+          "id": 17,
+          "name": "Протеиновый батончик Bombbar",
+          "products": [
+            {
+              "id": 56,
+              "name": "Протеиновый батончик Bombbar лесной орех",
+              "description": "Протеиновый батончик Bombbar лесной орех",
+              "volume": "160",
+              "unit": "г",
+              "price": 110,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 57,
+              "name": "Протеиновый батончик Bombbar Датский бисквит",
+              "description": "Протеиновый батончик Bombbar Датский бисквит",
+              "volume": "160",
+              "unit": "г",
+              "price": 110,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "name": "Шоколадка Ritter sport",
+          "products": [
+            {
+              "id": 58,
+              "name": "Шоколадка Ritter sport Лесной орех",
+              "description": "Шоколадка Ritter sport Лесной орех",
+              "volume": "16",
+              "unit": "г",
+              "price": 30,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 59,
+              "name": "Шоколадка Ritter sport Йогурт",
+              "description": "Шоколадка Ritter sport Йогурт",
+              "volume": "16",
+              "unit": "г",
+              "price": 30,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 60,
+              "name": "Шоколадка Ritter sport Кукурузные хлопья",
+              "description": "Шоколадка Ritter sport Кукурузные хлопья",
+              "volume": "16",
+              "unit": "г",
+              "price": 30,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 61,
+              "name": "Шоколадка Ritter sport Хрустящее печенье",
+              "description": "Шоколадка Ritter sport Хрустящее печенье",
+              "volume": "16",
+              "unit": "г",
+              "price": 30,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+          ]
+        },
+        {
+          "id": 19,
+          "name": "Макарон",
+          "products": [
+            {
+              "id": 62,
+              "name": "Макарон Банан",
+              "description": "Макарон Банан",
+              "volume": "160",
+              "unit": "г",
+              "price": 60,
+              "time_cooking": "01:00:00",
+              "additions": null
+            },
+            {
+              "id": 63,
+              "name": "Макарон Банан Манго-маракуйя",
+              "description": "Макарон Манго-маракуйя",
+              "volume": "160",
+              "unit": "г",
+              "price": 60,
+              "time_cooking": "01:00:00",
+              "additions": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
