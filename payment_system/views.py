@@ -29,6 +29,8 @@ def get_payment_tinkoff(request, user_id=None):
         if transaction:
 
             if data.get('Status') == 'CONFIRMED':
+                if transaction.status > 1:
+                    return HttpResponse('ok', status=200)
                 if data.get('RebillId'):
                     card = Card.objects.filter(card_number=data['Pan'], is_deleted=False, user=transaction.user).first()
                     if not card:
