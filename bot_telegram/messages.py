@@ -177,9 +177,9 @@ class BotAction:
         transaction.save()
         for user_product in user_products:
             transaction.products.add(user_product)
-            count += user_product.product.price
+            count += user_product.product.price * 100
             for addition in user_product.additions.all():
-                count += addition.price
+                count += addition.price * 100
         transaction.count = count
         transaction.save()
         markup = types.InlineKeyboardMarkup(row_width=1)
@@ -227,6 +227,11 @@ class BotAction:
 
     def card_complete_order_bonus(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
+        restaurant = transaction.restaurant
+
+        for user_product in transaction.products.all():
+            user_product.is_store = True
+            user_product.save()
 
     def repeat_pay(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
