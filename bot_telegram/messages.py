@@ -5,6 +5,7 @@ from .menu_parser import *
 from .pay_system import *
 from django.db.models import Q
 
+
 class BotAction:
 
     def __init__(self, bot, message, user):
@@ -409,8 +410,8 @@ class BotAction:
                    types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
                    types.InlineKeyboardButton(f'{next_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{next_page}'))
         message_text = self.get_message_text('category', 'Выберите категорию или товар')
-        self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
-                                   text=message_text, reply_markup=markup)
+        self.bot.edit_message_reply_markup(chat_id=self.message.chat.id, message_id=self.message.message_id,
+                                           text=message_text, reply_markup=markup)
 
         return self.user.step
 
