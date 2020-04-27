@@ -203,7 +203,8 @@ class BotAction:
         message_text = self.get_message_text('choice_card', 'Выберите карту для оплаты')
         self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
                                    message_id=self.message.message_id, reply_markup=markup)
-        self.clear_basket()
+        user_basket = self.user.telegrambasket
+        user_basket.products.all().delete()
         return self.user.step
 
     def card_complete_order_another(self, transaction_id):
@@ -224,7 +225,8 @@ class BotAction:
         else:
             message_text = self.get_message_text('init_payment_fail', 'Произошла ошибка при созании платежа, обратитесь к администратору')
             self.bot.send_message(self.message.chat.id, message_text)
-        self.clear_basket()
+        user_basket = self.user.telegrambasket
+        user_basket.products.all().delete()
         return self.user.step
 
     def card_complete_order_bonus(self, transaction_id):
@@ -257,7 +259,8 @@ class BotAction:
         message_text = self.get_message_text('buyproduct', 'Выберите действие\n\n')
         self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                    text=message_text, reply_markup=markup)
-        self.clear_basket()
+        user_basket = self.user.telegrambasket
+        user_basket.products.all().delete()
         return self.user.step
 
     def card_repeat(self, transaction_id):
