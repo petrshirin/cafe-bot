@@ -107,7 +107,16 @@ def inline_logic(c):
 
         user.step = action.accept_order(transaction_id)
 
-    if c.data == "nearest_restaurants":
+    elif 'confirmorder_' in c.data:
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+        user.step = action.confirm_order(transaction_id)
+
+    elif c.data == "nearest_restaurants":
         user.step = action.send_location()
 
     elif c.data == 'all_restaurants':
