@@ -141,7 +141,31 @@ def inline_logic(c):
         user.step = action.complete_current_order()
 
     elif c.data == 'cardcompleteorder_':
-        pass
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+        user.step = action.card_complete_order(transaction_id)
+
+    elif c.data == 'cardcompleteanotherorder_':
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+        user.step = action.card_complete_order_another(transaction_id)
+
+    elif c.data == 'cardcompletebonusorder_':
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+        user.step = action.card_complete_order_bonus(transaction_id)
 
     elif 'repeatpay_' in c.data:
         try:

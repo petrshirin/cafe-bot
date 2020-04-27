@@ -186,7 +186,7 @@ class BotAction:
         markup.add(types.InlineKeyboardButton('Оплатить картой', callback_data=f'cardcompleteorder_{transaction.pk}'))
         markup.add(types.InlineKeyboardButton('Оплатить другой картой', callback_data=f'cardcompleteanotherorder_{transaction.pk}'))
         markup.add(types.InlineKeyboardButton('Оплатить бонусами', callback_data=f'cardcompletebonusorder_{transaction.pk}'))
-        markup.add(types.InlineKeyboardButton('В карзину', callback_data=f'basket'))
+        markup.add(types.InlineKeyboardButton('В корзину', callback_data=f'basket'))
         message_text = self.get_message_text('buyproduct', 'Выберите действие\n\n')
         self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                    text=message_text, reply_markup=markup)
