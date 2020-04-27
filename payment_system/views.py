@@ -77,7 +77,7 @@ def get_payment_tinkoff(request, user_id=None):
 
 def calculate_cash_back(transaction):
     user = transaction.user
-    user_cash_back_sale = UserSale.objects.filter(user=user, is_cash_back=True).first()
+    user_cash_back_sale = UserSale.objects.filter(user=user, sale__is_cash_back=True).first()
     if user_cash_back_sale:
         user.bonus.count += transaction.count * (1 - user_cash_back_sale.percent)
         user.bonus.save()

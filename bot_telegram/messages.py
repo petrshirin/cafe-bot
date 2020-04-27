@@ -28,7 +28,7 @@ class BotAction:
         markup = types.InlineKeyboardMarkup(row_width=1)
         transaction.status = 4
         markup.add(types.InlineKeyboardButton('Завершить заказ', callback_data=f'confirmorder_{transaction_id}'))
-        self.bot.edit_message_text(user_id=self.user.user_id, text=self.message.text, message_id=self.message.message_id, reply_markup=markup)
+        self.bot.edit_message_text(chat_id=self.user.user_id, text=self.message.text, message_id=self.message.message_id, reply_markup=markup)
         self.bot.send_message(transaction.user.user_id, message_text_user)
         return self.user.step
 
@@ -38,7 +38,7 @@ class BotAction:
             pass
         message_text_user = self.get_message_text('accept_order', f'Заказ №{transaction.pk}, покажите это сообщение или чек об оплате')
         transaction.status = 5
-        self.bot.edit_message_text(user_id=self.user.user_id, text="ВЫПОЛНЕН\n\n" + self.message.text, message_id=self.message.message_id)
+        self.bot.edit_message_text(chat_id=self.user.user_id, text="ВЫПОЛНЕН\n\n" + self.message.text, message_id=self.message.message_id)
         self.bot.send_message(transaction.user.user_id, message_text_user)
         return self.user.step
 
