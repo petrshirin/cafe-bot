@@ -137,6 +137,15 @@ def inline_logic(c):
     elif c.data == 'my_cards':
         user.step = action.cards()
 
+    elif 'sale_' in c.data:
+        try:
+            param = c.data.split('_')
+            user_sale_id = param[1]
+        except Exception as err:
+            print(err)
+            return None
+        user.step = action.sale(user_sale_id)
+
     elif c.data == 'clear_basket':
         user.step = action.clear_basket()
 
