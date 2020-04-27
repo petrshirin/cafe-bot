@@ -145,7 +145,7 @@ class BotAction:
         markup = types.InlineKeyboardMarkup(row_width=2)
         user_basket = self.user.telegrambasket
         for product in user_basket.products.all():
-            markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume} ({product.product.price})', callback_data=f'productbasket_{product.id}'))
+            markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}руб.)', callback_data=f'productbasket_{product.id}'))
         markup.add(types.InlineKeyboardButton('Отчистить корзину', callback_data='clear_basket'),
                    types.InlineKeyboardButton('История заказов', callback_data='basket_history'))
         markup.add(types.InlineKeyboardButton('Завершить текущий заказ', callback_data='complete_current_order'),
@@ -178,7 +178,7 @@ class BotAction:
         for user_product in user_products:
             transaction.products.add(user_product)
             count += user_product.product.price
-            for addition in user_product.additions:
+            for addition in user_product.additions.all():
                 count += addition.price
         transaction.count = count
         transaction.save()
@@ -525,7 +525,7 @@ class BotAction:
         self.user.telegrambasket.products.add(user_product)
         message_text = self.get_message_text('added_to_basket', f'{user_product.product.name} добавлен в корзину')
         markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton(f'Завершить заказ', callback_data='complete_order'))
+        markup.add(types.InlineKeyboardButton(f'Завершить заказ', callback_data='complete_current_order'))
         markup.add(types.InlineKeyboardButton(f'Продолжить покупки', callback_data=f'restaurant_{restaurant_id}_0'))
         self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
         user_product.save()
