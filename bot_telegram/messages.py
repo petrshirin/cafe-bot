@@ -148,10 +148,10 @@ class BotAction:
         user_basket = self.user.telegrambasket
         for product in user_basket.products.all():
             markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}руб.)', callback_data=f'productbasket_{product.id}'))
-        markup.add(types.InlineKeyboardButton('Отчистить корзину', callback_data='clear_basket'),
+        markup.add(types.InlineKeyboardButton('Очистить корзину', callback_data='clear_basket'),
                    types.InlineKeyboardButton('История заказов', callback_data='basket_history'))
-        markup.add(types.InlineKeyboardButton('Завершить текущий заказ', callback_data='complete_current_order'),
-                   types.InlineKeyboardButton('Главное меню', callback_data='main_menu'))
+        markup.add(types.InlineKeyboardButton('Главное меню', callback_data='main_menu'))
+        markup.add(types.InlineKeyboardButton('Завершить текущий заказ', callback_data='complete_current_order'))
         message_text = self.get_message_text('basket', 'Ваша корзина\n\n выберите продукт для подробной информации')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
         return 7
@@ -186,7 +186,7 @@ class BotAction:
         transaction.save()
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton('Оплатить картой', callback_data=f'cardcompleteorder_{transaction.pk}'))
-        markup.add(types.InlineKeyboardButton('Оплатить другой картой', callback_data=f'cardcompleteanotherorder_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('Оплатить новой картой', callback_data=f'cardcompleteanotherorder_{transaction.pk}'))
         markup.add(types.InlineKeyboardButton('Оплатить бонусами', callback_data=f'cardcompletebonusorder_{transaction.pk}'))
         markup.add(types.InlineKeyboardButton('В корзину', callback_data=f'basket'))
         message_text = self.get_message_text('buyproduct', 'Выберите действие\n\n')
@@ -255,7 +255,7 @@ class BotAction:
             return self.user.step
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton('Оплатить картой', callback_data=f'cardrepeat_{transaction.pk}'))
-        markup.add(types.InlineKeyboardButton('Оплатить другой картой', callback_data=f'cardrepeatanother_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('Оплатить новой картой', callback_data=f'cardrepeatanother_{transaction.pk}'))
         markup.add(types.InlineKeyboardButton('Оплатить бонусами', callback_data=f'cardrepeatbonus_{transaction.pk}'))
         markup.add(types.InlineKeyboardButton('Вернуться к истории заказов', callback_data=f'basket_history'))
         message_text = self.get_message_text('buyproduct', 'Выберите действие\n\n')
@@ -388,14 +388,14 @@ class BotAction:
     def restaurant_category(self, restaurant_id, rest_category, page):
         restaurant = Restaurant.objects.get(pk=restaurant_id)
         markup = types.InlineKeyboardMarkup(row_width=3)
-        offset_menu = page * 5
+        offset_menu = page * 10
         menu = rest_category
         max_pages = int((len(menu.products) + len(menu.categories)) / 5) if ((len(menu.products) + len(menu.categories)) % 5 == 0) else int((len(menu.products) + len(menu.categories)) / 5 + 1)
         next_page = (page + 1) if (page + 1 < max_pages) else 0
         previous_page = (page - 1) if (page - 1 > 0) else max_pages - 1
         all_items = menu.products + menu.categories
         print(len(menu.products) + len(menu.categories))
-        for j in range(offset_menu, offset_menu + 5):
+        for j in range(offset_menu, offset_menu + 10):
             if j >= (len(menu.products) + len(menu.categories)):
                 break
             item = all_items[j]
@@ -418,12 +418,12 @@ class BotAction:
     def restaurant_menu(self, restaurant_id, page, struct):
         restaurant = Restaurant.objects.get(pk=restaurant_id)
         menu = struct
-        offset_menu = page * 5
+        offset_menu = page * 10
         max_pages = int(len(menu.products) / 5) if (len(menu.products) % 5 == 0) else int(len(menu.products) / 5 + 1)
         next_page = (page + 1) if (page + 1 < max_pages) else 0
         previous_page = (page - 1) if (page - 1 > 0) else max_pages - 1
         markup = types.InlineKeyboardMarkup(row_width=3)
-        for i in range(offset_menu, offset_menu + 5):
+        for i in range(offset_menu, offset_menu + 10):
             if i >= len(menu.products):
                 break
             markup.add(types.InlineKeyboardButton(f'{menu.products[i].name} {menu.products[i].volume} {menu.products[i].unit}.({menu.products[i].price}₽)', callback_data=f'product_{restaurant.pk}_{menu.products[i].id}'))
@@ -448,7 +448,7 @@ class BotAction:
             message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price}₽\n\n{product_orm.description}')
 
             markup = types.InlineKeyboardMarkup(row_width=1)
-            markup.add(types.InlineKeyboardButton('Купить', callback_data=f'buyproduct_{restaurant.pk}_{user_product.product.pk}'))
+            markup.add(types.InlineKeyboardButton('Добавить', callback_data=f'buyproduct_{restaurant.pk}_{user_product.product.pk}'))
             if product_orm.additions.all():
                 markup.add(types.InlineKeyboardButton(f'Добавить что в {product_orm.name}', callback_data=f'additions_{restaurant.pk}_{user_product.pk}'))
             markup.add(types.InlineKeyboardButton(f'Назад', callback_data=f'category_{restaurant.pk}_{product.previous_id}_0'))

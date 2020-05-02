@@ -37,7 +37,7 @@ def send_welcome(message):
     if not message_to_send:
         message_text = '''Привет, {}
 Добро пожаловать в бота {}
-Правила публичной оферты {} принимаются после первого платежа в системе
+Правила публичной оферты Карты принимаются после первого платежа в системе
 Давай уже закажем первый кофе!
 На первый заказ через бота действует скидка 50%
 '''
@@ -45,7 +45,7 @@ def send_welcome(message):
         message_text = message_to_send.text
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton('Главное Меню'))
-    bot.send_message(message.chat.id, message_text.format(user.user_name, telegram_bot.name, telegram_bot.name), reply_markup=markup)
+    bot.send_document(chat_id=message.chat.id, data=telegram_bot.public_offer, caption=message_text.format(user.user_name, telegram_bot.name), reply_markup=markup)
 
 
 @bot.message_handler(content_types=['text'])

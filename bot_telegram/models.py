@@ -38,6 +38,7 @@ class TelegramBot(models.Model):
     name = models.CharField(max_length=255)
     token = models.CharField(max_length=100)
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE)
+    public_offer = models.FileField(upload_to='public_offer/', default=None, blank=True, null=True)
 
     def __str__(self):
         return f"{self.pk} {self.name} {self.owner.name}"
