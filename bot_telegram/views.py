@@ -5,6 +5,7 @@ from .models import *
 from .messages import *
 from .menu_parser import *
 import os
+import re
 
 # Create your views here.
 
@@ -65,6 +66,8 @@ def text_messages(message):
     elif message.text.lower() == 'отмена':
         if user.step == 21:
             user.step = action.cheques()
+        elif user.step == 51:
+            user.step = 0
     else:
         if user.step == 21:
             email = message.text
@@ -77,7 +80,26 @@ def text_messages(message):
                 bot.send_message(message.chat.id, 'Неверно введен Email, попробуйте заного')
                 user.step = action.add_email()
             user.step = action.cheques(True)
+#        elif user.step == 51:
+#            phone = re.match(r'((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7}', message.text)
+#            if phone:
+#                user.phone = phone.group()
+#                bot.send_message(message.chat.id, 'Номер сохранен')
+#                user.step = 0
+#            else:
+#                bot.send_message(message.chat.id, 'Вы неверно ввели номер телефона, повторите попытку')
 
+    user.save()
+
+
+@bot.message_handler(content_types=['contact'])
+def get_user_phone(message):
+    user = TelegramUser.objects.get(user_id=message.chat.id)
+    phone = message.contact.phone_number
+    if phone:
+        user.phone = phone
+        bot.send_message(message.chat.id, 'Номер сохранен')
+        user.step = 0
     user.save()
 
 
@@ -86,9 +108,8 @@ def get_user_location(message):
     user = TelegramUser.objects.get(user_id=message.chat.id)
     action = BotAction(bot, message, user)
     print(user.step)
-    if user.step == 2:
-        if message.location is not None:
-            user.step = action.nearest_restaurant(message.location.latitude, message.location.longitude)
+    if message.location is not None:
+        user.step = action.nearest_restaurant(message.location.latitude, message.location.longitude)
 
 
 @bot.callback_query_handler(func=lambda c: True)
@@ -158,6 +179,15 @@ def inline_logic(c):
     elif c.data == 'complete_current_order':
         user.step = action.complete_current_order()
 
+    elif 'paycardcompleteorder_' in c.data:
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+        user.step = action.pay_card_current_order(transaction_id)
+
     elif 'cardcompleteorder_' in c.data:
         try:
             param = c.data.split('_')
@@ -194,6 +224,16 @@ def inline_logic(c):
             return None
 
         user.step = action.repeat_pay(transaction_id)
+
+    elif 'paycardrepeat_' in c.data:
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+
+        user.step = action.pay_card_repeat_menu(transaction_id)
 
     elif 'cardrepeatanother_' in c.data:
         try:
@@ -294,6 +334,17 @@ def inline_logic(c):
             return
         print(rest_id, product_id)
         user.step = action.buy_product(rest_id, product_id)
+
+    elif 'paycardproduct_' in c.data:
+        try:
+            param = c.data.split('_')
+            rest_id = int(param[1])
+            product_id = int(param[2])
+        except Exception as err:
+            print(err)
+            return
+        print(rest_id, product_id)
+        user.step = action.pay_card_product(rest_id, product_id)
 
     elif 'product_' in c.data:
         try:

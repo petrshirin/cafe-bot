@@ -106,6 +106,7 @@ class TelegramUser(models.Model):
     role = models.ForeignKey(TelegramUserRole, on_delete=models.CASCADE)
     step = models.IntegerField(default=0)
     user_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20, default=None, blank=True, null=True)
 
 
 class TelegramUserProduct(models.Model):
