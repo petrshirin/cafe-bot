@@ -727,7 +727,7 @@ class BotAction:
                     transaction.status = 6
 
             message_text = f'Заказ №{transaction.pk}\n'
-            message_text += f'{self.user.user_name} tel: {self.user.phone}'
+            message_text += f'{self.user.user_name} tel: {self.user.phone}\n\n'
             for product in transaction.products.all():
                 i = 1
                 message_text += f'{product.product.name} {product.product.valume}{product.product.unit}\n'

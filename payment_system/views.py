@@ -52,6 +52,7 @@ def get_payment_tinkoff(request, user_id=None):
                         return HttpResponse('ok', status=201)
 
                 message_text = f'Заказ №{transaction.pk}\n\n'
+                message_text += f'{transaction.user.user_name} tel: {transaction.user.phone}\n\n'
                 for product in transaction.products.all():
                     i = 1
                     message_text += f'{product.product.name} {product.product.volume}{product.product.unit}\n'
