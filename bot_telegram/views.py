@@ -315,6 +315,7 @@ def inline_logic(c):
             menu = restaurant.menu_struct
             menu_struct = MenuStruct(menu, -1)
             category = menu_struct.get_category(category_id)
+            print(category)
             if category is None:
                 category = menu_struct
             if category.type == 'products':

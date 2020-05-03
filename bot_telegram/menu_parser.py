@@ -33,6 +33,9 @@ class MenuProduct:
 
 class MenuStruct:
 
+    def __str__(self):
+        return f'{self.id}. {self.type} {self.name}'
+
     def __init__(self, menu, previous_id):
         self.menu = menu
         if type(self.menu) == str:
@@ -85,8 +88,7 @@ class MenuStruct:
             return category.get_product(product_id)
 
 
-
-
 if __name__ == '__main__':
-    m = MenuStruct(json.loads(struct), -1)
-    print(m.categories[0].categories[0].previous_id)
+    f = open('C:/Users/Admin/WorkFreelance/CafeBot/cafebot/bot_telegram/pay_systems/menu.json', 'r', encoding='utf-8')
+    m = MenuStruct(json.loads(f.read()), -1)
+    print(m.categories[5].categories[3])
