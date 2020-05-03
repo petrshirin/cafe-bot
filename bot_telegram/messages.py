@@ -121,7 +121,7 @@ class BotAction:
     def bonus_systems(self):
         markup = types.InlineKeyboardMarkup(row_width=1)
         message_text = self.get_message_text('bonus_systems', 'Ваши кидки, нажмите, для подробной информации')
-        sales = UserSale.objects.filter(sale__bot=self.user.telegram_bot)
+        sales = UserSale.objects.filter(sale__bot=self.user.telegram_bot, user=self.user)
         for sale in sales:
             markup.add(types.InlineKeyboardButton(f'{sale.sale.name}', callback_data=f'sale_{sale.pk}'))
         markup.add(types.InlineKeyboardButton('Назад', callback_data='main_menu'))
