@@ -157,11 +157,13 @@ class BotAction:
     def basket(self):
         markup = types.InlineKeyboardMarkup(row_width=2)
         user_basket = self.user.telegrambasket
-        for product in user_basket.products.all():
+        products = user_basket.products.all()
+        for product in products:
             markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}руб.)', callback_data=f'productbasket_{product.id}'))
         markup.add(types.InlineKeyboardButton('Очистить корзину', callback_data='clear_basket'),
                    types.InlineKeyboardButton('История заказов', callback_data='basket_history'))
-        markup.add(types.InlineKeyboardButton('Назад к выбору продуктов', callback_data=f'restaurant_{user_basket.products.all()[0].pk}'))
+        if products:
+            markup.add(types.InlineKeyboardButton('Назад к выбору продуктов', callback_data=f'restaurant_{user_basket.products.all()[0].pk}'))
         markup.add(types.InlineKeyboardButton('Завершить текущий заказ', callback_data='complete_current_order'))
         message_text = self.get_message_text('basket', 'Ваша корзина\n\n Нажмите на продукт чтобы удалить')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
