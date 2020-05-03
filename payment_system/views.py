@@ -49,7 +49,7 @@ def get_payment_tinkoff(request, user_id=None):
                         bot.send_message(transaction.user.user_id, 'Оплата произведена, сейчас нет работающих менеджеров, '
                                                                    'Мы помним про ваш заказ, как только он освободится, вам придет оповещение')
                         transaction.status = 6
-                        return HttpResponse('ok', status=201)
+                        return HttpResponse('ok', status=200)
 
                 message_text = f'Заказ №{transaction.pk}\n\n'
                 message_text += f'{transaction.user.user_name} tel: {transaction.user.phone}\n\n'
@@ -75,7 +75,7 @@ def get_payment_tinkoff(request, user_id=None):
         else:
             return HttpResponse('fail transaction', status=401)
 
-    return HttpResponse('ok', status=201)
+    return HttpResponse('ok', status=200)
 
 
 def calculate_cash_back(transaction):
