@@ -435,7 +435,7 @@ class BotAction:
                        types.InlineKeyboardButton(f'{next_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{next_page}'))
         else:
             if menu.previous_id == -1:
-                markup.add(types.InlineKeyboardButton('Назад', callback_data=f'restaurant_{restaurant.pk}_0'))
+                markup.add(types.InlineKeyboardButton('Назад', callback_data=f'all_restaurants'))
             else:
                 markup.add(types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'))
         message_text = self.get_message_text('category', 'Выберите категорию или товар')
