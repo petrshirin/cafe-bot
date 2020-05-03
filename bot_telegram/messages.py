@@ -644,7 +644,7 @@ class BotAction:
             markup.add(types.KeyboardButton('Корзина'), types.KeyboardButton('Заведения'))
             markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
             self.bot.send_message(self.message.chat.id, 'Ресторан пропал, закажите в другом', reply_markup=markup)
-            return 0
+            return 1
 
         additions_price = 0
         for addition in product.additions.all():
@@ -724,7 +724,7 @@ class BotAction:
                 markup.add(types.KeyboardButton('Корзина'), types.KeyboardButton('Заведения'))
                 markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
                 self.bot.send_message(self.message.chat.id, 'Ресторан пропал, закажите в другом', reply_markup=markup)
-                return 0
+                return 1
             owner = restaurant.telegram_bot.owner
             payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
             card = user_card
@@ -733,7 +733,7 @@ class BotAction:
                 markup.add(types.KeyboardButton('Корзина'), types.KeyboardButton('Заведения'))
                 markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
                 self.bot.send_message(self.message.chat.id, 'Карта пропала, привяжите ее по новой.', reply_markup=markup)
-                return 0
+                return 1
 
             transaction = payment_system.do_pay(self.user, transaction, card)
 
@@ -748,7 +748,7 @@ class BotAction:
             markup.add(types.KeyboardButton('Корзина'), types.KeyboardButton('Заведения'))
             markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
             self.bot.send_message(self.message.chat.id, 'Такой транзакции уже нет, выберите товар заного', reply_markup=markup)
-            return 0
+            return 1
         return self.user.step
 
     def pay_bonuses(self, restaurant_id, transaction_id, user_card_id):
@@ -762,7 +762,7 @@ class BotAction:
                 markup.add(types.KeyboardButton('Корзина'), types.KeyboardButton('Заведения'))
                 markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
                 self.bot.send_message(self.message.chat.id, 'Ресторан пропал, закажите в другом', reply_markup=markup)
-                return 0
+                return 1
             payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay)
             transaction.is_bonuses = True
             try:
