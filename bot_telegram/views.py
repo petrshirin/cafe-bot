@@ -217,6 +217,16 @@ def inline_logic(c):
             return None
         user.step = action.card_complete_order_bonus(transaction_id)
 
+    elif 'repeatonemoreproduct_' in c.data:
+        try:
+            param = c.data.split('_')
+            user_product = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+
+        user.step = action.repeat_one_more_product(user_product)
+
     elif 'repeatpay_' in c.data:
         try:
             param = c.data.split('_')

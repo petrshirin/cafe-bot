@@ -606,7 +606,7 @@ class BotAction:
         markup.add(types.InlineKeyboardButton(f'Завершить заказ', callback_data='complete_current_order'))
         markup.add(types.InlineKeyboardButton(f'Продолжить покупки', callback_data=f'restaurant_{new_user_product.restaurant.pk}_0'))
         markup.add(types.InlineKeyboardButton(f'Добавить ещё 1', callback_data=f'repeatonemoreproduct_{new_user_product.pk}'))
-        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text+"\n\nПродукт добавлен", message_id=self.message.message_id, reply_markup=markup)
         user_product.save()
         return self.user.step
 
