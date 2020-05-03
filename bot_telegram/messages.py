@@ -419,8 +419,6 @@ class BotAction:
                 markup.add(types.InlineKeyboardButton(f'{item.name}', callback_data=f'category_{restaurant.pk}_{item.id}_0'))
             elif isinstance(item, MenuProduct):
                 markup.add(types.InlineKeyboardButton(f'{item.name} {item.volume} {item.unit}.({item.price}₽)', callback_data=f'product_{restaurant.pk}_{item.id}'))
-            if j == 5:
-                break
 
         markup.add(types.InlineKeyboardButton(f'{previous_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'),
                    types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
