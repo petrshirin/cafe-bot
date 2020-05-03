@@ -162,7 +162,7 @@ class BotAction:
         markup.add(types.InlineKeyboardButton('Очистить корзину', callback_data='clear_basket'),
                    types.InlineKeyboardButton('История заказов', callback_data='basket_history'))
         markup.add(types.InlineKeyboardButton('Завершить текущий заказ', callback_data='complete_current_order'))
-        message_text = self.get_message_text('basket', 'Ваша корзина\n\n выберите продукт для подробной информации')
+        message_text = self.get_message_text('basket', 'Ваша корзина\n\n Нажмите на продукт чтобы удалить')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
         return 7
 
@@ -181,6 +181,24 @@ class BotAction:
         self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                    text=message_text, reply_markup=markup)
         return self.user.step
+
+    def product_basket(self, product_id):
+        user_product = TelegramUserProduct.objects.filter(pk=product_id).first()
+        if not user_product:
+            self.bot.edit_message_text(chat_id=self.message.chat.id,
+                                       text="Вы не можете это сделать")
+            return self.basket()
+        user_product.delete()
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        user_basket = self.user.telegrambasket
+        for product in user_basket.products.all():
+            markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}руб.)', callback_data=f'productbasket_{product.id}'))
+        markup.add(types.InlineKeyboardButton('Очистить корзину', callback_data='clear_basket'),
+                   types.InlineKeyboardButton('История заказов', callback_data='basket_history'))
+        markup.add(types.InlineKeyboardButton('Завершить текущий заказ', callback_data='complete_current_order'))
+        message_text = self.get_message_text('basket', 'Ваша корзина\n\n Нажмите на продукт чтобы удалить')
+        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+
 
     def complete_current_order(self):
         user_products = TelegramUserProduct.objects.filter(is_basket=True, is_store=False, user=self.user).all()
@@ -595,6 +613,7 @@ class BotAction:
         user_product = TelegramUserProduct.objects.filter(pk=product_id).first()
         if not user_product:
             self.bot.send_message(chat_id=self.message.chat.id, text="Такого продукта больше нет")
+            return self.user.step
         new_user_product = TelegramUserProduct(user=user_product.user, product=user_product.product, restaurant=user_product.restaurant)
         new_user_product.save()
         for addition in user_product.additions.all():
