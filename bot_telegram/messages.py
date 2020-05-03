@@ -420,9 +420,12 @@ class BotAction:
             elif isinstance(item, MenuProduct):
                 markup.add(types.InlineKeyboardButton(f'{item.name} {item.volume} {item.unit}.({item.price}₽)', callback_data=f'product_{restaurant.pk}_{item.id}'))
 
-        markup.add(types.InlineKeyboardButton(f'{previous_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'),
-                   types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
-                   types.InlineKeyboardButton(f'{next_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{next_page}'))
+        if len(menu.products) + len(menu.categories) > 10:
+            markup.add(types.InlineKeyboardButton(f'{previous_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'),
+                       types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
+                       types.InlineKeyboardButton(f'{next_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{next_page}'))
+        else:
+            markup.add(types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'))
         message_text = self.get_message_text('category', 'Выберите категорию или товар')
         try:
             self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
@@ -443,9 +446,12 @@ class BotAction:
             if i >= len(menu.products):
                 break
             markup.add(types.InlineKeyboardButton(f'{menu.products[i].name} {menu.products[i].volume} {menu.products[i].unit}.({menu.products[i].price}₽)', callback_data=f'product_{restaurant.pk}_{menu.products[i].id}'))
-        markup.add(types.InlineKeyboardButton(f'{previous_page + 1}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'),
-                   types.InlineKeyboardButton(f'Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
-                   types.InlineKeyboardButton(f'{next_page + 1}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'))
+        if len(menu.products) > 10:
+            markup.add(types.InlineKeyboardButton(f'{previous_page + 1}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'),
+                       types.InlineKeyboardButton(f'Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
+                       types.InlineKeyboardButton(f'{next_page + 1}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'))
+        else:
+            markup.add(types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'))
         message_text = self.get_message_text('restaurant', 'Выберите товар')
         self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id, text=message_text, reply_markup=markup)
 
