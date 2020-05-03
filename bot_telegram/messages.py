@@ -586,9 +586,30 @@ class BotAction:
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton(f'Завершить заказ', callback_data='complete_current_order'))
         markup.add(types.InlineKeyboardButton(f'Продолжить покупки', callback_data=f'restaurant_{restaurant_id}_0'))
+        markup.add(types.InlineKeyboardButton(f'Добавить ещё 1', callback_data=f'repeatonemoreproduct_{user_product.pk}'))
         self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
         user_product.save()
         return self.user.step
+
+    def repeat_one_more_product(self, product_id):
+        user_product = TelegramUserProduct.objects.filter(pk=product_id).first()
+        if not user_product:
+            self.bot.send_message(chat_id=self.message.chat.id, text="Такого продукта больше нет")
+        new_user_product = TelegramUserProduct(user=user_product.user, product=user_product.product, restaurant=user_product.restaurant)
+        new_user_product.save()
+        for addition in user_product.additions.all():
+            new_user_product.additions.add(addition)
+        new_user_product.is_basket = True
+        self.user.telegrambasket.products.add(new_user_product)
+        message_text = self.get_message_text('added_to_basket', f'{new_user_product.product.name} добавлен в корзину')
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(types.InlineKeyboardButton(f'Завершить заказ', callback_data='complete_current_order'))
+        markup.add(types.InlineKeyboardButton(f'Продолжить покупки', callback_data=f'restaurant_{new_user_product.restaurant.pk}_0'))
+        markup.add(types.InlineKeyboardButton(f'Добавить ещё 1', callback_data=f'repeatonemoreproduct_{new_user_product.pk}'))
+        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+        user_product.save()
+        return self.user.step
+
 
     def pay_another_card(self, restaurant_id, product_id):
         try:
