@@ -52,7 +52,7 @@ class MenuStruct:
     def create_struct(self):
 
         if self.menu.get('products') and self.menu.get('categories'):
-            self.type = 'combined'
+            self.type = 'categories'
             self.products = []
             for product in self.menu['products']:
                 self.products.append(MenuProduct(product, self.id))
@@ -74,7 +74,9 @@ class MenuStruct:
             if category.id == category_id:
                 return category
         for category in self.categories:
-            return category.get_category(category_id)
+            category = category.get_category( category_id)
+            if category:
+                return category
 
     def get_product(self, product_id):
         for product in self.products:
@@ -91,4 +93,4 @@ class MenuStruct:
 if __name__ == '__main__':
     f = open('C:/Users/Admin/WorkFreelance/CafeBot/cafebot/bot_telegram/pay_systems/menu.json', 'r', encoding='utf-8')
     m = MenuStruct(json.loads(f.read()), -1)
-    print(m.categories[5].categories[3])
+    print(m.get_category(18))
