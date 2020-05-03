@@ -178,6 +178,15 @@ def inline_logic(c):
     elif c.data == 'basket':
         user.step = action.basket()
 
+    elif 'productbasket_' in c.data:
+        try:
+            param = c.data.split('_')
+            product = int(param[1])
+        except Exception as err:
+            print(err)
+            return None
+        user.step = action.product_basket(product)
+
     elif c.data == 'complete_current_order':
         user.step = action.complete_current_order()
 
