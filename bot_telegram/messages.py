@@ -602,9 +602,9 @@ class BotAction:
         self.user.telegrambasket.products.add(user_product)
         message_text = self.get_message_text('added_to_basket', f'{user_product.product.name} добавлен в корзину')
         markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(types.InlineKeyboardButton(f'Добавить ещё 1', callback_data=f'repeatonemoreproduct_{user_product.pk}'))
         markup.add(types.InlineKeyboardButton(f'Завершить заказ', callback_data='complete_current_order'))
         markup.add(types.InlineKeyboardButton(f'Продолжить покупки', callback_data=f'restaurant_{restaurant_id}_0'))
-        markup.add(types.InlineKeyboardButton(f'Добавить ещё 1', callback_data=f'repeatonemoreproduct_{user_product.pk}'))
         self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
         user_product.save()
         return self.user.step
