@@ -619,7 +619,7 @@ class BotAction:
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=2)
             markup.add(types.KeyboardButton('Отправить свой телефон', request_contact=True),
                        types.KeyboardButton('Отмена'))
-            self.bot.send_message(self.message.chat.id, message_text)
+            self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
             return 51
         else:
             return self.user.step
@@ -728,7 +728,8 @@ class BotAction:
                                                                     'Мы помним про ваш заказ, как только он освободится, вам придет оповещение')
                     transaction.status = 6
 
-            message_text = f'Заказ №{transaction.pk}\n\n'
+            message_text = f'Заказ №{transaction.pk}\n'
+            message_text += f'{self.user.user_name} tel: {self.user.phone}'
             for product in transaction.products.all():
                 i = 1
                 message_text += f'{product.product.name} {product.product.valume}{product.product.unit}\n'
