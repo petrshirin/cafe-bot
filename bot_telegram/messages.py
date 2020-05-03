@@ -540,8 +540,13 @@ class BotAction:
 
         else:
             message_text = self.get_message_text('additions', 'Выберите, что хотите добавить')
-            self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
-                                       message_id=self.message.message_id, reply_markup=markup)
+            try:
+                self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
+                                           message_id=self.message.message_id, reply_markup=markup)
+            except Exception as err:
+                print(err)
+                self.bot.edit_message_caption(chat_id=self.message.chat.id, text=self.message.caption + f'\n\n{message_text}',
+                                              message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
     def add_addition(self, restaurant_id, user_product, addition):
