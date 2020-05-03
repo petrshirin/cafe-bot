@@ -530,8 +530,13 @@ class BotAction:
 
         if count_additions == 0:
             message_text = self.get_message_text('additions_not_found', 'В этот продукт ничего нельзя добавить')
-            self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
-                                       message_id=self.message.message_id)
+            try:
+                self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
+                                           message_id=self.message.message_id)
+            except apihelper.ApiException:
+                self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.text + f'\n\n{message_text}',
+                                              message_id=self.message.message_id)
+
         else:
             message_text = self.get_message_text('additions', 'Выберите, что хотите добавить')
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
@@ -553,8 +558,12 @@ class BotAction:
         markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
 
         message_text = f'{addition.name} добавлен\n'
-        self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
-                                   message_id=self.message.message_id, reply_markup=markup)
+        try:
+            self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
+                                       message_id=self.message.message_id, reply_markup=markup)
+        except apihelper.ApiException:
+            self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.text + f'\n\n{message_text}',
+                                       message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
     def buy_product(self, restaurant_id, product_id):
