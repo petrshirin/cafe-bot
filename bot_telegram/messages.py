@@ -533,8 +533,9 @@ class BotAction:
             try:
                 self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
                                            message_id=self.message.message_id)
-            except apihelper.ApiException:
-                self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.text + f'\n\n{message_text}',
+            except Exception as err:
+                print(err)
+                self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.caption + f'\n\n{message_text}',
                                               message_id=self.message.message_id)
 
         else:
@@ -558,11 +559,13 @@ class BotAction:
         markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
 
         message_text = f'{addition.name} добавлен\n'
+        print(self.message)
         try:
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
                                        message_id=self.message.message_id, reply_markup=markup)
-        except apihelper.ApiException:
-            self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.text + f'\n\n{message_text}',
+        except Exception as err:
+            print(err)
+            self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.caption + f'\n\n{message_text}',
                                        message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
