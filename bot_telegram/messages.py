@@ -109,6 +109,16 @@ class BotAction:
             self.bot.send_message(self.message.chat.id, 'Такой карты не существует')
             return self.cards()
 
+    def delete_card(self, card_id):
+        card = Card.objects.filter(user=self.user, pk=card_id).first()
+        if card:
+            card.is_deleted = True
+            card.save()
+            return self.cards()
+        else:
+            self.bot.send_message(self.message.chat.id, 'Такой карты не существует')
+            return self.cards()
+
     def bonus_system(self):
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton('Скидки на 23 и 8 марта', callback_data='people_days_sale'),
@@ -151,7 +161,6 @@ class BotAction:
             markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}руб.)', callback_data=f'productbasket_{product.id}'))
         markup.add(types.InlineKeyboardButton('Очистить корзину', callback_data='clear_basket'),
                    types.InlineKeyboardButton('История заказов', callback_data='basket_history'))
-        markup.add(types.InlineKeyboardButton('Главное меню', callback_data='main_menu'))
         markup.add(types.InlineKeyboardButton('Завершить текущий заказ', callback_data='complete_current_order'))
         message_text = self.get_message_text('basket', 'Ваша корзина\n\n выберите продукт для подробной информации')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
