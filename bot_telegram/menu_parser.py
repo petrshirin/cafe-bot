@@ -87,10 +87,12 @@ class MenuStruct:
                 if product.id == product_id:
                     return product
         for category in self.categories:
-            return category.get_product(product_id)
+            product = category.get_product(product_id)
+            if product:
+                return product
 
 
 if __name__ == '__main__':
     f = open('C:/Users/Admin/WorkFreelance/CafeBot/cafebot/bot_telegram/pay_systems/menu.json', 'r', encoding='utf-8')
     m = MenuStruct(json.loads(f.read()), -1)
-    print(m.get_category(18))
+    print(m.get_product(57))
