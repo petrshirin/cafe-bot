@@ -47,6 +47,8 @@ def send_welcome(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton('Главное Меню'))
     bot.send_document(chat_id=message.chat.id, data=open(telegram_bot.public_offer.path, 'rb'), caption=message_text.format(user.user_name, telegram_bot.name), reply_markup=markup)
+    action = BotAction(bot, message, user)
+    action.main_menu()
 
 
 @bot.message_handler(content_types=['text'])
