@@ -533,11 +533,11 @@ class BotAction:
             message_text = self.get_message_text('additions_not_found', 'В этот продукт ничего нельзя добавить')
             try:
                 self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
-                                           message_id=self.message.message_id)
+                                           message_id=self.message.message_id, reply_markup=markup)
             except Exception as err:
                 print(err)
                 self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.caption + f'\n\n{message_text}',
-                                              message_id=self.message.message_id)
+                                              message_id=self.message.message_id, reply_markup=markup)
 
         else:
             message_text = self.get_message_text('additions', 'Выберите, что хотите добавить')
