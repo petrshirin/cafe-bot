@@ -1,0 +1,19 @@
+[program:cafebot]
+command=python3 /var/www/cafe-bot/manage.py runserver 127.0.0.1:8000
+directory=/var/www/cafe-bot/
+environment=PATH="/var/www/cafe-bot/venv/bin/"
+umask=022
+autostart=true
+autorestart=true
+startsecs=10
+startretries=3
+exitcodes=0,2
+stopsignal=TERM
+stopwaitsecs=10
+user=root
+
+stderr_logfile=/var/log/cafe-bot/app_err.log
+stderr_logfile_maxbytes=1MB
+
+stdout_logfile=/var/log/cafe-bot/app_out.log
+stdout_logfile_maxbytes=1MB
