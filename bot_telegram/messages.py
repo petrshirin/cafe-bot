@@ -348,10 +348,9 @@ class BotAction:
         self.pay_bonuses(restaurant.pk, transaction.pk)
 
     def restaurants(self):
-        markup = types.InlineKeyboardMarkup(row_width=2)
+        markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton('Ближайшие', callback_data='nearest_restaurants'))
         restaurants = Restaurant.objects.filter(telegram_bot=TelegramBot.objects.get(token=self.bot.token)).all()
-        markup = types.InlineKeyboardMarkup(row_width=1)
         for restaurant in restaurants:
             markup.add(types.InlineKeyboardButton(restaurant.restaurantsettings.address, callback_data=f'restaurant_{restaurant.pk}_0'))
         message_text = self.get_message_text('restaurants', 'Наши заведения')
