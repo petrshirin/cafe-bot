@@ -57,7 +57,7 @@ def text_messages(message):
     action = BotAction(bot, message, user)
     if message.text.lower() == 'главное меню':
         user.step = action.main_menu()
-    elif message.text.lower() == 'заведения':
+    elif message.text.lower() == action.get_message_text('restaurant_button_name', 'заведения').lower():
         user.step = action.restaurants()
     elif message.text.lower() == 'настройки':
         action.settings()

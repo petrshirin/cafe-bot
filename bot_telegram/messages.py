@@ -47,7 +47,7 @@ class BotAction:
 
     def main_menu(self):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-        markup.add(types.KeyboardButton('Корзина'), types.KeyboardButton('Заведения'))
+        markup.add(types.KeyboardButton(self.get_message_text('restaurant_button_name', 'Заведения')), types.KeyboardButton('Корзина'))
         markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
         message_text = self.get_message_text('main_menu', 'Главное меню')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
