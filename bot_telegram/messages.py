@@ -202,7 +202,6 @@ class BotAction:
         message_text = self.get_message_text('basket', 'Ваша корзина\n\n Нажмите на продукт чтобы удалить')
         self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
 
-
     def complete_current_order(self):
         user_products = TelegramUserProduct.objects.filter(is_basket=True, is_store=False, user=self.user).all()
         count = 0
@@ -387,8 +386,11 @@ class BotAction:
 
     def restaurants(self):
         markup = types.InlineKeyboardMarkup(row_width=2)
-        markup.add(types.InlineKeyboardButton('Ближайшие', callback_data='nearest_restaurants'),
-                   types.InlineKeyboardButton('Все адреса', callback_data='all_restaurants'))
+        markup.add(types.InlineKeyboardButton('Ближайшие', callback_data='nearest_restaurants'))
+        restaurants = Restaurant.objects.filter(telegram_bot=TelegramBot.objects.get(token=self.bot.token)).all()
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        for restaurant in restaurants:
+            markup.add(types.InlineKeyboardButton(restaurant.restaurantsettings.address, callback_data=f'restaurant_{restaurant.pk}_0'))
         message_text = self.get_message_text('restaurants', 'Наши заведения')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
         return 2
