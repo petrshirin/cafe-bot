@@ -4,7 +4,7 @@ from geopy import distance as geopy_distance
 from .menu_parser import *
 from .pay_system import *
 from django.db.models import Q
-
+from django.utils import timezone
 
 
 class BotAction:
@@ -767,3 +767,32 @@ class BotAction:
             self.bot.send_message(manager.user_id, message_text, reply_markup=markup)
             transaction.save()
             return self.user.step
+
+    def check_restaurant_time(self, restaurant_id=None):
+        if restaurant_id is None:
+            restaurants = Restaurant.objects.filter(telegram_bot=self.user.telegram_bot).all()
+            for restaurant in restaurants:
+                if restaurant.restaurantsettings.time_opened < timezone.now().time() or restaurant.restaurantsettings.time_closed > timezone.now().time():
+                    return True
+        else:
+            restaurant = Restaurant.objects.filter(pk=restaurant_id).first()
+            if restaurant:
+                if restaurant.restaurantsettings.time_opened < timezone.now().time() or restaurant.restaurantsettings.time_closed > timezone.now().time():
+                    return True
+                else:
+                    return False
+            else:
+                return False
+
+    def check_restaurant_in_basket(self, restaurant_id):
+        restaurant = Restaurant.objects.filter(pk=restaurant_id).first()
+        if restaurant:
+            basket = TelegramBasket.objects.filter(user=self.user).first()
+            if basket:
+                for product in basket.products.all():
+                    if product.restaurant != restaurant:
+                        markup = types.InlineKeyboardMarkup(row_width=1)
+                        markup.add(types.InlineKeyboardButton('', callback_data=f'restaurant_{product.restaurant.pk}'))
+                        self.bot.send_message(self.message.chat.id, self.get_message_text('two_restaurants_in_basket', 'Вы заказали уже в другом ресторане, отчистите корзина или продолжите покупки в этом ресторане'), reply_markup=markup)
+                        return False
+        return True

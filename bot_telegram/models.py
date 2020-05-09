@@ -93,6 +93,8 @@ class RestaurantSettings(models.Model):
     payment_type = models.CharField(max_length=60, default='Tinkoff')
     latitude = models.FloatField()
     longitude = models.FloatField()
+    time_opened = models.TimeField(default=None, null=True, blank=True)
+    time_closed = models.TimeField(default=None, null=True, blank=True)
 
 
 class TelegramUserRole(models.Model):

@@ -55,7 +55,9 @@ def send_welcome(message):
 def text_messages(message):
     user = TelegramUser.objects.get(user_id=message.chat.id)
     action = BotAction(bot, message, user)
-    if message.text.lower() == 'главное меню':
+    if not action.check_restaurant_time():
+        bot.send_message(message.chat.id, action.get_message_text('all_restaurant_closed', 'Все заведения сейчас закрыты'))
+    elif message.text.lower() == 'главное меню':
         user.step = action.main_menu()
     elif message.text.lower() == action.get_message_text('restaurant_button_name', 'заведения').lower():
         user.step = action.restaurants()
@@ -304,6 +306,11 @@ def inline_logic(c):
             print(err)
             return None
         restaurant = Restaurant.objects.filter(pk=rest_id).first()
+        if not action.check_restaurant_time():
+            bot.send_message(action.message.chat.id, action.get_message_text('restaurant_closed', 'Заведение сейчас закрыто'))
+            return
+        if not action.check_restaurant_in_basket(rest_id):
+            return
         if restaurant:
             menu = restaurant.menu_struct
             menu_struct = MenuStruct(menu, -1)
