@@ -598,7 +598,10 @@ class BotAction:
         menu_struct = MenuStruct(menu, -1)
         user_product.is_basket = True
         user_product.save()
-        return self.restaurant_menu(restaurant_id, 0, menu_struct)
+        if menu_struct.type == 'products':
+            return self.restaurant_menu(restaurant.pk, 0, menu_struct)
+        elif menu_struct.type == 'categories':
+            return self.restaurant_category(restaurant.pk, menu_struct, 0)
 
         user_product.is_basket = True
         self.user.telegrambasket.products.add(user_product)
