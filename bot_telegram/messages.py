@@ -680,7 +680,7 @@ class BotAction:
     def get_user_phone(self):
         if not self.user.phone:
             message_text = self.get_message_text('get_phone', 'Введите свой номер телефона\n\n'
-                                                              'Номер необходим для связи баристы с вами')
+                                                              'Номер необходим для связи бариста с вами')
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=2)
             markup.add(types.KeyboardButton('Отправить свой телефон', request_contact=True),
                        types.KeyboardButton('Отмена'))
