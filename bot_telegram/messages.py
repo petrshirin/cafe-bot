@@ -598,10 +598,15 @@ class BotAction:
         menu_struct = MenuStruct(menu, -1)
         user_product.is_basket = True
         user_product.save()
+
         if menu_struct.type == 'products':
-            return self.restaurant_menu(restaurant.pk, 0, menu_struct)
+            self.restaurant_menu(restaurant.pk, 0, menu_struct)
         elif menu_struct.type == 'categories':
-            return self.restaurant_category(restaurant.pk, menu_struct, 0)
+            self.restaurant_category(restaurant.pk, menu_struct, 0)
+
+        message_text = self.get_message_text('added_to_basket', f'{user_product.product.name} добавлен в корзину')
+        self.bot.send_message(self.message.chat.id, message_text)
+        return self.user.step
 
         user_product.is_basket = True
         self.user.telegrambasket.products.add(user_product)
