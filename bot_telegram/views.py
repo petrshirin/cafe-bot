@@ -55,9 +55,11 @@ def send_welcome(message):
 def text_messages(message):
     user = TelegramUser.objects.get(user_id=message.chat.id)
     action = BotAction(bot, message, user)
-    if message.text.lower() == 'главное меню':
+    if not action.check_restaurant_time():
+        bot.send_message(message.chat.id, action.get_message_text('all_restaurant_closed', 'Все заведения сейчас закрыты'))
+    elif message.text.lower() == 'главное меню':
         user.step = action.main_menu()
-    elif message.text.lower() == 'заведения':
+    elif message.text.lower() == action.get_message_text('restaurant_button_name', 'заведения').lower():
         user.step = action.restaurants()
     elif message.text.lower() == 'настройки':
         action.settings()
@@ -199,15 +201,6 @@ def inline_logic(c):
             return None
         user.step = action.pay_card_current_order(transaction_id)
 
-    elif 'cardcompleteorder_' in c.data:
-        try:
-            param = c.data.split('_')
-            transaction_id = int(param[1])
-        except Exception as err:
-            print(err)
-            return None
-        user.step = action.card_complete_order(transaction_id)
-
     elif 'cardcompleteanotherorder_' in c.data:
         try:
             param = c.data.split('_')
@@ -313,6 +306,11 @@ def inline_logic(c):
             print(err)
             return None
         restaurant = Restaurant.objects.filter(pk=rest_id).first()
+        if not action.check_restaurant_time():
+            bot.send_message(action.message.chat.id, action.get_message_text('restaurant_closed', 'Заведение сейчас закрыто'))
+            return
+        if not action.check_restaurant_in_basket(rest_id):
+            return
         if restaurant:
             menu = restaurant.menu_struct
             menu_struct = MenuStruct(menu, -1)
@@ -425,16 +423,6 @@ def inline_logic(c):
             if addition:
                 user.step = action.add_addition(rest_id, user_product, addition)
 
-    elif 'productpay_' in c.data:
-        try:
-            param = c.data.split('_')
-            rest_id = int(param[1])
-            product_id = int(param[2])
-        except Exception as err:
-            print(err)
-            return
-        user.step = action.pay_card(rest_id, product_id)
-
     elif 'productpayanother_' in c.data:
         try:
             param = c.data.split('_')
@@ -455,6 +443,33 @@ def inline_logic(c):
             print(err)
             return
         user.step = action.choice_card(rest_id, transaction_id, user_card_id)
+
+    elif 'productbonuspay_' in c.data:
+        try:
+            param = c.data.split('_')
+            restaurant_id = int(param[1])
+            user_product_id = int(param[2])
+        except Exception as err:
+            print(err)
+            return
+        user_product = TelegramUserProduct.objects.filter(pk=user_product_id).first()
+        if not user_product:
+            bot.send_message(chat_id=action.message.chat.id, text="такой продукт больше не существует, выебрите его заного")
+            return 1
+
+        user_product.is_store = True
+        user_product.save()
+        restaurant = Restaurant.objects.filter(pk=restaurant_id).first()
+
+        additions_price = 0
+        for addition in user_product.additions.all():
+            additions_price += addition.price * 100
+        transaction = Transaction(user=user, count=user_product.product.price * 100 + additions_price, restaurant=restaurant)
+        transaction.save()
+        transaction.products.add(user_product)
+        transaction.save()
+
+        user.step = action.pay_bonuses(restaurant_id, transaction.pk)
 
     user.save()
 
