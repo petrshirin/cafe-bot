@@ -605,7 +605,7 @@ class BotAction:
             self.restaurant_category(restaurant.pk, menu_struct, 0)
 
         message_text = self.get_message_text('added_to_basket', f'{user_product.product.name} добавлен в корзину')
-        self.bot.send_message(self.message.chat.id, message_text)
+        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id)
         return self.user.step
 
         user_product.is_basket = True
