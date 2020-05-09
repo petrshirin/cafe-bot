@@ -591,6 +591,13 @@ class BotAction:
         return self.user.step
 
     def add_to_basket(self, restaurant_id, user_product):
+
+        # Вейк ап сити правка
+        restaurant = Restaurant.objects.filter(pk=restaurant_id).firsst()
+        menu = restaurant.menu_struct
+        menu_struct = MenuStruct(menu, -1)
+        return self.restaurant_menu(restaurant_id, 0, menu_struct)
+
         user_product.is_basket = True
         self.user.telegrambasket.products.add(user_product)
         message_text = self.get_message_text('added_to_basket', f'{user_product.product.name} добавлен в корзину')
