@@ -593,9 +593,11 @@ class BotAction:
     def add_to_basket(self, restaurant_id, user_product):
 
         # Вейк ап сити правка
-        restaurant = Restaurant.objects.filter(pk=restaurant_id).firsst()
+        restaurant = Restaurant.objects.filter(pk=restaurant_id).first()
         menu = restaurant.menu_struct
         menu_struct = MenuStruct(menu, -1)
+        user_product.is_basket = True
+        user_product.save()
         return self.restaurant_menu(restaurant_id, 0, menu_struct)
 
         user_product.is_basket = True
