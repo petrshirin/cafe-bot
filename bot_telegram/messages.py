@@ -792,7 +792,7 @@ class BotAction:
                 for product in basket.products.all():
                     if product.restaurant != restaurant:
                         markup = types.InlineKeyboardMarkup(row_width=1)
-                        markup.add(types.InlineKeyboardButton('', callback_data=f'restaurant_{product.restaurant.pk}'))
+                        markup.add(types.InlineKeyboardButton(f'{product.restaurant.restaurantsettings.address}', callback_data=f'restaurant_{product.restaurant.pk}'))
                         self.bot.send_message(self.message.chat.id, self.get_message_text('two_restaurants_in_basket', 'Вы заказали уже в другом ресторане, отчистите корзина или продолжите покупки в этом ресторане'), reply_markup=markup)
                         return False
         return True
