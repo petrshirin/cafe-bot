@@ -100,9 +100,13 @@ def text_messages(message):
 def get_user_phone(message):
     user = TelegramUser.objects.get(user_id=message.chat.id)
     phone = message.contact.phone_number
+    action = BotAction(bot, message, user)
     if phone:
         user.phone = phone
-        bot.send_message(message.chat.id, 'Номер сохранен')
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+        markup.add(types.KeyboardButton(action.get_message_text('restaurant_button_name', 'Заведения')), types.KeyboardButton('Корзина'))
+        markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
+        bot.send_message(message.chat.id, 'Номер сохранен', reply_markup=markup)
         user.step = 0
     user.save()
 
