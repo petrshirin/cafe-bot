@@ -40,7 +40,6 @@ def send_welcome(message):
 Добро пожаловать в бота {}
 Правила публичной оферты Карты принимаются после первого платежа в системе
 Давай уже закажем первый кофе!
-На первый заказ через бота действует скидка 50%
 '''
     else:
         message_text = message_to_send.text
@@ -61,11 +60,11 @@ def text_messages(message):
         user.step = action.main_menu()
     elif message.text.lower() == action.get_message_text('restaurant_button_name', 'заведения').lower():
         user.step = action.restaurants()
-    elif message.text.lower() == 'настройки':
+    elif message.text.lower() == '⚙️настройки':
         action.settings()
-    elif message.text.lower() == 'корзина':
+    elif message.text.lower() == '🛒корзина':
         action.basket()
-    elif message.text.lower() == 'скидки и бонусы':
+    elif message.text.lower() == '🎁скидки и бонусы':
         action.bonus_systems()
     elif message.text.lower() == 'отмена':
         if user.step == 21:
