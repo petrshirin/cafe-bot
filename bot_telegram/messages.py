@@ -475,7 +475,7 @@ class BotAction:
 
             addition_price = 0
             for addition in user_product.additions.all():
-                addition_price += addition
+                addition_price += addition.price
 
             message_text = self.get_message_text('product', 'Вы выбрали: {}')
             if addition_price:
