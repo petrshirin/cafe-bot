@@ -157,6 +157,7 @@ class Sale(models.Model):
 class UserSale(models.Model):
     user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
     sale = models.ForeignKey(Sale, models.CASCADE)
+    count = models.IntegerField(default=999999)
 
 
 class Transaction(models.Model):
@@ -223,13 +224,12 @@ def control_user_sales(sender, instance, created, **kwargs):
             for user in users:
                 user_sale = UserSale.objects.filter(user=user, sale=instance).first()
                 if not user_sale:
-                    user_sale = UserSale(user=user, sale=instance)
+                    user_sale = UserSale(user=user, sale=instance, count=instance.count_transaction)
                     user_sale.save()
         if not instance.is_active:
             for user in users:
                 user_sale = UserSale.objects.filter(user=user, sale=instance).first()
                 if user_sale:
                     user_sale.delete()
-
 
 

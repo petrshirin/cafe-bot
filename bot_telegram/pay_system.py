@@ -17,10 +17,12 @@ class PaySystem:
 
     @staticmethod
     def calculate_sale(user, transaction):
-        user_sales = UserSale.objects.filter(user=user).all()
+        user_sales = UserSale.objects.filter(user=user, count__gte=1).all()
         for user_sale in user_sales:
             if not user_sale.sale.is_cash_back:
                 transaction.count = transaction.count * (1-user_sale.sale.percent)
+                user_sale.count -= 1
+                user_sale.save()
         transaction.save()
 
     def init_pay(self, user, transaction):
