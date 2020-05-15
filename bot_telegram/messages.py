@@ -456,8 +456,11 @@ class BotAction:
         else:
             markup.add(types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'))
         message_text = self.get_message_text('restaurant', 'Выберите товар')
-        self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id, text=message_text, reply_markup=markup)
-
+        try:
+            self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id, text=message_text, reply_markup=markup)
+        except apihelper.ApiException:
+            self.bot.delete_message(chat_id=self.message.chat.id, message_id=self.message.message_id)
+            self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
         return self.user.step
 
     def restaurant_product(self, restaurant_id, product):
