@@ -196,7 +196,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         TelegramBasket.objects.create(user=instance)
         sales = Sale.objects.filter(base_sale=True, bot=instance.telegram_bot, is_active=True).all()
         for sale in sales:
-            UserSale.objects.create(user=instance, sale=sale)
+            UserSale.objects.create(user=instance, sale=sale, count=sale.count_transaction)
 
 
 @receiver(post_save, sender=TelegramUser)

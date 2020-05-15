@@ -22,7 +22,10 @@ class PaySystem:
             if not user_sale.sale.is_cash_back:
                 transaction.count = transaction.count * (1-user_sale.sale.percent)
                 user_sale.count -= 1
-                user_sale.save()
+                if user_sale.count == 0:
+                    user_sale.delete()
+                else:
+                    user_sale.save()
         transaction.save()
 
     def init_pay(self, user, transaction):
