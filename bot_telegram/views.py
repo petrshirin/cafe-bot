@@ -40,6 +40,7 @@ def send_welcome(message):
 Добро пожаловать в бота {}
 Правила публичной оферты Карты принимаются после первого платежа в системе
 Давай уже закажем первый кофе!
+На первый заказ через бота будет действовать скидка 50%
 '''
     else:
         message_text = message_to_send.text
@@ -56,7 +57,7 @@ def text_messages(message):
     action = BotAction(bot, message, user)
     if not action.check_restaurant_time():
         bot.send_message(message.chat.id, action.get_message_text('all_restaurant_closed', 'Все заведения сейчас закрыты'))
-    elif message.text.lower() == 'главное меню':
+    elif message.text.lower() == '🏠главное меню':
         user.step = action.main_menu()
     elif message.text.lower() == action.get_message_text('restaurant_button_name', 'заведения').lower():
         user.step = action.restaurants()

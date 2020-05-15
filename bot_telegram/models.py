@@ -219,7 +219,7 @@ def save_owner_settings(sender, instance, **kwargs):
 @receiver(post_save, sender=Sale)
 def control_user_sales(sender, instance, created, **kwargs):
     if created:
-        users = User.objects.filter(telegram_bot=instance.bot).all()
+        users = TelegramUser.objects.filter(telegram_bot=instance.bot).all()
         if instance.base_sale and instance.is_active:
             for user in users:
                 user_sale = UserSale.objects.filter(user=user, sale=instance).first()

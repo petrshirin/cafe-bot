@@ -578,7 +578,7 @@ class BotAction:
                 additions_price += addition.price
 
             if user_product:
-                markup.add(types.InlineKeyboardButton('➡️Добавить в корзину и продолжить покупки', callback_data=f'addtobasket_{restaurant.pk}_{user_product.pk}'))
+                markup.add(types.InlineKeyboardButton('➡️Добавить в корзину и продолжить', callback_data=f'addtobasket_{restaurant.pk}_{user_product.pk}'))
                 markup.add(types.InlineKeyboardButton('💳Оплатить картой', callback_data=f'paycardproduct_{restaurant.pk}_{user_product.pk}'))
                 if self.user.bonus.count >= user_product.product.price + additions_price:
                     markup.add(types.InlineKeyboardButton('🎁Оплатить бонусами', callback_data=f'productbonuspay_{restaurant.pk}_{user_product.pk}'))
@@ -708,11 +708,10 @@ class BotAction:
 
     def get_user_phone(self):
         if not self.user.phone:
-            message_text = self.get_message_text('get_phone', 'Введите свой номер телефона\n\n'
-                                                              'Номер необходим для связи бариста с вами')
+            message_text = self.get_message_text('get_phone', 'Просьба отправить свой номер телефона на случай если нам потребуется связаться с Вами')
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=2)
-            markup.add(types.KeyboardButton('Отправить свой телефон', request_contact=True),
-                       types.KeyboardButton('Отмена'))
+            markup.add(types.KeyboardButton('📞Отправить свой номер', request_contact=True),
+                       types.KeyboardButton('🏠Главное меню'))
             self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
             return 51
         else:
