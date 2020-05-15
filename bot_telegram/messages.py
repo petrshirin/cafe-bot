@@ -355,7 +355,7 @@ class BotAction:
 
     def restaurants(self):
         markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton('Ближайшие', callback_data='nearest_restaurants'))
+        markup.add(types.InlineKeyboardButton('📍Ближайшие', callback_data='nearest_restaurants'))
         restaurants = Restaurant.objects.filter(telegram_bot=TelegramBot.objects.get(token=self.bot.token)).all()
         for restaurant in restaurants:
             markup.add(types.InlineKeyboardButton(restaurant.restaurantsettings.address, callback_data=f'restaurant_{restaurant.pk}_0'))
