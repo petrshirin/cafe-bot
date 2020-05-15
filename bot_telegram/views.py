@@ -59,6 +59,8 @@ def text_messages(message):
         bot.send_message(message.chat.id, action.get_message_text('all_restaurant_closed', 'Все заведения сейчас закрыты'))
     elif message.text.lower() == '🏠главное меню':
         user.step = action.main_menu()
+    elif message.text.lower() == 'главное меню':
+        user.step = action.main_menu()
     elif message.text.lower() == action.get_message_text('restaurant_button_name', 'заведения').lower():
         user.step = action.restaurants()
     elif message.text.lower() == '⚙️настройки':
