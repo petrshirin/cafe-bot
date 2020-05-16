@@ -172,7 +172,10 @@ class BotAction:
 
     def clear_basket(self):
         user_basket = self.user.telegrambasket
-        user_basket.products.all().delete()
+        for product in user_basket.products.all():
+            product.is_store = True
+            product.save()
+        user_basket.products.clear()
         return self.basket()
 
     def basket_history(self):
@@ -242,7 +245,10 @@ class BotAction:
         for user_card in user_cards:
             markup.add(types.InlineKeyboardButton(f'{user_card.card_number}', callback_data=f'choicecard_{transaction.restaurant.pk}_{user_card.pk}_{transaction.pk}'))
         user_basket = self.user.telegrambasket
-        user_basket.products.all().delete()
+        for product in user_basket.products.all():
+            product.is_store = True
+            product.save()
+        user_basket.products.clear()
         return markup
 
     def card_complete_order_another(self, transaction_id):
@@ -266,7 +272,7 @@ class BotAction:
             message_text = self.get_message_text('init_payment_fail', f'Произошла ошибка при созании платежа, обратитесь к [администратору](https://t.me/{manager.name})')
             self.bot.send_message(self.message.chat.id, message_text, parse_mode='Markdown')
         user_basket = self.user.telegrambasket
-        user_basket.products.all().delete()
+        user_basket.products.clear()
         return self.user.step
 
     def card_complete_order_bonus(self, transaction_id):
@@ -300,8 +306,6 @@ class BotAction:
         message_text = self.get_message_text('buyproduct', 'Выберите действие\n\n')
         self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                    text=message_text, reply_markup=markup)
-        user_basket = self.user.telegrambasket
-        user_basket.products.all().delete()
         return self.user.step
 
     def pay_card_repeat_menu(self, transaction_id):
