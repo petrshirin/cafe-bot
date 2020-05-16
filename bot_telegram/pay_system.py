@@ -33,6 +33,7 @@ class PaySystem:
         if transaction.is_bonuses:
             if user.bonus.count >= transaction.count / 100:
                 user.bonus.count -= transaction.count
+                user.bonus.save()
                 transaction.is_bonuses = True
                 transaction.status = 2
                 transaction.save()
