@@ -829,7 +829,7 @@ class BotAction:
             message_text += f'{self.user.user_name} tel: {self.user.phone}\n\n'
             for product in transaction.products.all():
                 i = 1
-                message_text += f'{product.product.name} {product.product.valume}{product.product.unit}\n'
+                message_text += f'{product.product.name} {product.product.volume}{product.product.unit}\n'
                 for addition in product.additions.all():
                     message_text += f'{i}. {addition.name}\n'
                 message_text += '\n'
