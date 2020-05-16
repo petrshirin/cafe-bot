@@ -212,7 +212,6 @@ class BotAction:
         count = 0
         transaction = Transaction(user=self.user, restaurant=user_products[0].restaurant)
         transaction.save()
-        print(user_products)
         for user_product in user_products:
             transaction.products.add(user_product)
             count += user_product.product.price * 100
@@ -431,7 +430,6 @@ class BotAction:
         next_page = (page + 1) if (page + 1 < max_pages) else 0
         previous_page = (page - 1) if (page - 1 > 0) else max_pages - 1
         all_items = menu.products + menu.categories
-        print(len(menu.products) + len(menu.categories))
         for j in range(offset_menu, offset_menu + 10):
             if j >= (len(menu.products) + len(menu.categories)):
                 break

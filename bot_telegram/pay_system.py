@@ -31,8 +31,8 @@ class PaySystem:
     def init_pay(self, user, transaction):
         self.calculate_sale(user, transaction)
         if transaction.is_bonuses:
-            if user.bonus.count * 100 >= transaction.count:
-                user.bonus -= transaction.count
+            if user.bonus.count >= transaction.count / 100:
+                user.bonus.count -= transaction.count
                 transaction.is_bonuses = True
                 transaction.status = 2
                 transaction.save()
