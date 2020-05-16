@@ -209,6 +209,7 @@ class BotAction:
         count = 0
         transaction = Transaction(user=self.user, restaurant=user_products[0].restaurant)
         transaction.save()
+        print(user_products)
         for user_product in user_products:
             transaction.products.add(user_product)
             count += user_product.product.price * 100
