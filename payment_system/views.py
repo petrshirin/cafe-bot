@@ -58,6 +58,7 @@ def get_payment_tinkoff(request, user_id=None):
                     message_text += f'{product.product.name} {product.product.volume}{product.product.unit}\n'
                     for addition in product.additions.all():
                         message_text += f'{i}. {addition.name}\n'
+                        i += 1
                     message_text += '\n'
                 markup = types.InlineKeyboardMarkup(row_width=1)
                 markup.add(types.InlineKeyboardButton('Принять заказ', callback_data=f'acceptorder_{transaction.pk}'))

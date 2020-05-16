@@ -313,13 +313,19 @@ class BotAction:
 
     def card_repeat(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
-        transaction = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
-        transaction.save()
-        owner = transaction.restaurant.telegram_bot.owner.pk
-        payment_system = PaySystem(transaction.restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
-        transaction = payment_system.do_pay(self.user, transaction, transaction.card)
-        transaction.save()
-        if transaction.payment_id:
+        transaction_new = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
+        transaction_new.save()
+
+        for product in transaction.products.all():
+            transaction_new.products.add(product)
+
+        transaction_new.save()
+
+        owner = transaction_new.restaurant.telegram_bot.owner.pk
+        payment_system = PaySystem(transaction_new.restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
+        transaction_new = payment_system.do_pay(self.user, transaction_new, transaction_new.card)
+        transaction_new.save()
+        if transaction_new.payment_id:
             self.bot.send_message(self.message.chat.id, "Заказ выполняется")
         else:
             self.bot.send_message(self.message.chat.id, "Произошла ошибка при заказе")
@@ -327,17 +333,23 @@ class BotAction:
 
     def card_repeat_another(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
-        transaction = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
-        transaction.save()
+        transaction_new = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
+        transaction_new.save()
 
-        restaurant = transaction.restaurant
+        for product in transaction.products.all():
+            transaction_new.products.add(product)
+
+        transaction_new.save()
+
+
+        restaurant = transaction_new.restaurant
 
         owner = restaurant.telegram_bot.owner
         payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
-        transaction = payment_system.init_pay(self.user, transaction)
+        transaction_new = payment_system.init_pay(self.user, transaction_new)
 
-        if transaction.url:
-            message_text = self.get_message_text('payment_link', 'Ваша ссылка на оплату\n\n{}\n').format(transaction.url)
+        if transaction_new.url:
+            message_text = self.get_message_text('payment_link', 'Ваша ссылка на оплату\n\n{}\n').format(transaction_new.url)
             self.bot.send_message(self.message.chat.id, message_text)
         else:
             manager = restaurant.managers.objects.filter(is_active=True).first()
@@ -347,11 +359,15 @@ class BotAction:
 
     def card_repeat_bonus(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
-        transaction = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
+        transaction_new = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
         transaction.save()
+        for product in transaction.products.all():
+            transaction_new.products.add(product)
 
-        restaurant = transaction.restaurant
-        self.pay_bonuses(restaurant.pk, transaction.pk)
+        transaction_new.save()
+
+        restaurant = transaction_new.restaurant
+        self.pay_bonuses(restaurant.pk, transaction_new.pk)
 
     def restaurants(self):
         markup = types.InlineKeyboardMarkup(row_width=1)
@@ -445,6 +461,9 @@ class BotAction:
         next_page = (page + 1) if (page + 1 < max_pages) else 0
         previous_page = (page - 1) if (page - 1 > 0) else max_pages - 1
         markup = types.InlineKeyboardMarkup(row_width=3)
+
+        TelegramUserProduct.objects.filter(user=self.user, is_basket=False, is_store=False, restaurant=restaurant).all().delete()
+
         for i in range(offset_menu, offset_menu + 10):
             if i >= len(menu.products):
                 break
@@ -468,7 +487,7 @@ class BotAction:
         product_orm = restaurant.products.filter(pk=product.id).first()
         if product_orm:
             user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
-                                                              is_basket=False, is_store=False).first()
+                                                              is_basket=False, is_store=False, restaurant=restaurant).first()
             if not user_product:
                 user_product = TelegramUserProduct(user=self.user, product=product_orm, is_basket=False, is_store=False, restaurant=restaurant)
                 user_product.save()
@@ -481,7 +500,7 @@ class BotAction:
             if addition_price:
                 message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price} + {addition_price}₽\n\n{product_orm.description}')
             else:
-                message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price} + {addition_price}₽\n\n{product_orm.description}')
+                message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price}\n\n{product_orm.description}')
 
             markup = types.InlineKeyboardMarkup(row_width=1)
             markup.add(types.InlineKeyboardButton('✅Купить', callback_data=f'buyproduct_{restaurant.pk}_{user_product.product.pk}'))
