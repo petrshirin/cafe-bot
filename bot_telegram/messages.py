@@ -205,7 +205,7 @@ class BotAction:
         self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
 
     def complete_current_order(self):
-        user_products = TelegramUserProduct.objects.filter(is_basket=True, is_store=False, user=self.user).all()
+        user_products = self.user.telegrambasket.products.all()
         count = 0
         transaction = Transaction(user=self.user, restaurant=user_products[0].restaurant)
         transaction.save()
@@ -249,6 +249,7 @@ class BotAction:
         restaurant = transaction.restaurant
 
         for user_product in transaction.products.all():
+            user_product.is_basket = True
             user_product.is_store = True
             user_product.save()
 
@@ -645,8 +646,8 @@ class BotAction:
         menu = restaurant.menu_struct
         menu_struct = MenuStruct(menu, -1)
         user_product.is_basket = True
-        user_product.save()
         self.user.telegrambasket.products.add(user_product)
+        user_product.save()
 
         if menu_struct.type == 'products':
             self.restaurant_menu(restaurant.pk, 0, menu_struct)
