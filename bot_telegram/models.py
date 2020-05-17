@@ -86,6 +86,9 @@ class Restaurant(models.Model):
     products = models.ManyToManyField(RestaurantMenu, default=None, null=True)
     managers = models.ManyToManyField(RestaurantManager, blank=True, default=None)
 
+    class Meta:
+        ordering = ['-pk']
+
 
 class RestaurantSettings(models.Model):
     restaurant = models.OneToOneField(Restaurant, on_delete=models.CASCADE)

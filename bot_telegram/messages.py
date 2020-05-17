@@ -160,7 +160,10 @@ class BotAction:
         user_basket = self.user.telegrambasket
         products = user_basket.products.all()
         for product in products:
-            markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}руб.)', callback_data=f'productbasket_{product.id}'))
+            addition_price = 0
+            for addition in product.additions.all():
+                addition_price += addition.price
+            markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}{"+" + str(addition_price) if addition_price else ""}.)', callback_data=f'productbasket_{product.id}'))
         markup.add(types.InlineKeyboardButton('❌Очистить корзину', callback_data='clear_basket'),
                    types.InlineKeyboardButton('📖История заказов', callback_data='basket_history'))
         if products:
