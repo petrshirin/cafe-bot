@@ -857,14 +857,16 @@ class BotAction:
             restaurants = Restaurant.objects.filter(telegram_bot=self.user.telegram_bot).all()
             for restaurant in restaurants:
                 if restaurant.restaurantsettings.time_opened < timezone.now().time() or restaurant.restaurantsettings.time_closed > timezone.now().time():
+                    return False
+                else:
                     return True
         else:
             restaurant = Restaurant.objects.filter(pk=restaurant_id).first()
             if restaurant:
                 if restaurant.restaurantsettings.time_opened < timezone.now().time() or restaurant.restaurantsettings.time_closed > timezone.now().time():
-                    return True
-                else:
                     return False
+                else:
+                    return True
             else:
                 return False
 
