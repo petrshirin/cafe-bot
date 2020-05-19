@@ -301,7 +301,6 @@ def inline_logic(c):
             return None
         user.step = action.delete_card( card_id)
 
-
     elif 'my_sales' == c.data:
         user.step = action.bonus_systems()
 
@@ -323,7 +322,7 @@ def inline_logic(c):
             print(err)
             return None
         restaurant = Restaurant.objects.filter(pk=rest_id).first()
-        if not action.check_restaurant_time():
+        if not action.check_restaurant_time(rest_id):
             bot.send_message(action.message.chat.id, action.get_message_text('restaurant_closed', 'Заведение сейчас закрыто'))
             return
         if not action.check_restaurant_in_basket(rest_id):
