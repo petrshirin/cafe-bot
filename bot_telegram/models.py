@@ -197,6 +197,7 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         TelegramUserSettings.objects.create(user=instance)
         TelegramBasket.objects.create(user=instance)
+        Bonus.objects.create(user=instance, count=0)
         sales = Sale.objects.filter(base_sale=True, bot=instance.telegram_bot, is_active=True).all()
         for sale in sales:
             UserSale.objects.create(user=instance, sale=sale, count=sale.count_transaction)

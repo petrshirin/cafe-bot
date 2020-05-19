@@ -493,6 +493,7 @@ class BotAction:
     def restaurant_product(self, restaurant_id, product):
         restaurant = Restaurant.objects.get(pk=restaurant_id)
         product_orm = restaurant.products.filter(pk=product.id).first()
+        TelegramUserProduct.objects.filter(user=self.user, is_basket=False, is_store=False, restaurant=restaurant).all().delete()
         if product_orm:
             user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
                                                               is_basket=False, is_store=False, restaurant=restaurant).first()
