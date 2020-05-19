@@ -565,10 +565,10 @@ class BotAction:
                                               message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
-    def add_addition(self, restaurant_id, user_product, addition):
+    def add_addition(self, restaurant_id, user_product, add_addition):
         restaurant = Restaurant.objects.get(pk=restaurant_id)
         markup = types.InlineKeyboardMarkup(row_width=1)
-        user_product.additions.add(addition)
+        user_product.additions.add(add_addition)
         user_product.save()
         count_additions = 0
         all_user_additions = user_product.additions.all()
@@ -579,7 +579,7 @@ class BotAction:
                 markup.add(types.InlineKeyboardButton(f'{addition_orm.name} ({addition_orm.price}₽)', callback_data=f'additionadd_{restaurant.pk}_{user_product.pk}_{addition_orm.pk}'))
         markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
 
-        addition_added = f'{addition.name} добавлен\n'
+        addition_added = f'{add_addition.name} добавлен\n'
         addition_price = 0
         for addition in user_product.additions.all():
             addition_price += addition.price
