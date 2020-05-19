@@ -336,7 +336,7 @@ class BotAction:
 
         transaction_new.save()
 
-        owner = transaction_new.restaurant.telegram_bot.owner.pk
+        owner = transaction_new.restaurant.telegram_bot.owner
         payment_system = PaySystem(transaction_new.restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
         transaction_new = payment_system.do_pay(self.user, transaction_new, transaction_new.card)
         transaction_new.save()
