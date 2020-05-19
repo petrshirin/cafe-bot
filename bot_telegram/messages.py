@@ -164,13 +164,15 @@ class BotAction:
             for addition in product.additions.all():
                 addition_price += addition.price
             markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}{"+" + str(addition_price) if addition_price else ""}руб.)', callback_data=f'productbasket_{product.id}'))
-        markup.add(types.InlineKeyboardButton('❌Очистить корзину', callback_data='clear_basket'),
-                   types.InlineKeyboardButton('📖История заказов', callback_data='basket_history'))
+
         if products:
+            markup.add(types.InlineKeyboardButton('❌Очистить корзину', callback_data='clear_basket'),
+                       types.InlineKeyboardButton('📖История заказов', callback_data='basket_history'))
             markup.add(types.InlineKeyboardButton('↩️Назад к выбору продуктов', callback_data=f'restaurant_{user_basket.products.all()[0].restaurant.pk}_0'))
             markup.add(types.InlineKeyboardButton('✅Завершить текущий заказ', callback_data='complete_current_order'))
             message_text = self.get_message_text('void_basket', 'Ваша корзина')
         else:
+            markup.add(types.InlineKeyboardButton('📖История заказов', callback_data='basket_history'))
             message_text = self.get_message_text('basket', 'Ваша корзина\n\nНажмите на продукт чтобы удалить')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
         return 7
@@ -428,6 +430,7 @@ class BotAction:
 
     def restaurant_category(self, restaurant_id, rest_category, page):
         restaurant = Restaurant.objects.get(pk=restaurant_id)
+        TelegramUserProduct.objects.filter(user=self.user, is_basket=False, is_store=False, restaurant=restaurant).all().delete()
         markup = types.InlineKeyboardMarkup(row_width=3)
         offset_menu = page * 10
         menu = rest_category
@@ -462,7 +465,9 @@ class BotAction:
         return self.user.step
 
     def restaurant_menu(self, restaurant_id, page, struct):
+
         restaurant = Restaurant.objects.get(pk=restaurant_id)
+        TelegramUserProduct.objects.filter(user=self.user, is_basket=False, is_store=False, restaurant=restaurant).all().delete()
         menu = struct
         offset_menu = page * 10
         max_pages = int(len(menu.products) / 5) if (len(menu.products) % 5 == 0) else int(len(menu.products) / 5 + 1)
@@ -493,7 +498,6 @@ class BotAction:
     def restaurant_product(self, restaurant_id, product):
         restaurant = Restaurant.objects.get(pk=restaurant_id)
         product_orm = restaurant.products.filter(pk=product.id).first()
-        TelegramUserProduct.objects.filter(user=self.user, is_basket=False, is_store=False, restaurant=restaurant).all().delete()
         if product_orm:
             user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
                                                               is_basket=False, is_store=False, restaurant=restaurant).first()
@@ -509,7 +513,7 @@ class BotAction:
             if addition_price:
                 message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price} + {addition_price}₽\n\n{product_orm.description}')
             else:
-                message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price}\n\n{product_orm.description}')
+                message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price}₽\n\n{product_orm.description}')
 
             markup = types.InlineKeyboardMarkup(row_width=1)
             markup.add(types.InlineKeyboardButton('✅Купить', callback_data=f'buyproduct_{restaurant.pk}_{user_product.product.pk}'))
