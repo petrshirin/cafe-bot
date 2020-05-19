@@ -237,15 +237,16 @@ class BotAction:
         return self.user.step
 
     def pay_card_current_order(self, transaction_id):
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup = self.card_complete_order(transaction_id, markup)
+        markup = self.card_complete_order(transaction_id)
+
         markup.add(types.InlineKeyboardButton('➕Оплатить новой картой', callback_data=f'cardcompleteanotherorder_{transaction_id}'))
         message_text = self.get_message_text('choice_card_type', 'Выберите Способ оплаты')
         self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
         return self.user.step
 
-    def card_complete_order(self, transaction_id, markup):
+    def card_complete_order(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
+        markup = types.InlineKeyboardMarkup(row_width=1)
 
         user_cards = Card.objects.filter(~Q(rebill_id=None), is_deleted=False, user=self.user).all()
         for user_card in user_cards:
