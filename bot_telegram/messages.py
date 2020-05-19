@@ -146,7 +146,7 @@ class BotAction:
             message_text = f'{sale.sale.name}\n\n{sale.sale.description}'
             if sale.sale.is_cash_back:
                 message_text += f'\n\nСейчас у вас {self.user.bonus.count} бонусов'
-                if self.user.bonus.count != 0:
+                if self.user.bonus.count > 0:
                     markup.add(types.InlineKeyboardButton('Потратить', callback_data='all_restaurants'))
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
                                        message_id=self.message.message_id, reply_markup=markup)
@@ -163,13 +163,15 @@ class BotAction:
             addition_price = 0
             for addition in product.additions.all():
                 addition_price += addition.price
-            markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}{"+" + str(addition_price) if addition_price else ""}.)', callback_data=f'productbasket_{product.id}'))
+            markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}{"+" + str(addition_price) if addition_price else ""}руб.)', callback_data=f'productbasket_{product.id}'))
         markup.add(types.InlineKeyboardButton('❌Очистить корзину', callback_data='clear_basket'),
                    types.InlineKeyboardButton('📖История заказов', callback_data='basket_history'))
         if products:
             markup.add(types.InlineKeyboardButton('↩️Назад к выбору продуктов', callback_data=f'restaurant_{user_basket.products.all()[0].restaurant.pk}_0'))
             markup.add(types.InlineKeyboardButton('✅Завершить текущий заказ', callback_data='complete_current_order'))
-        message_text = self.get_message_text('basket', 'Ваша корзина\n\n Нажмите на продукт чтобы удалить')
+            message_text = self.get_message_text('void_basket', 'Ваша корзина')
+        else:
+            message_text = self.get_message_text('basket', 'Ваша корзина\n\nНажмите на продукт чтобы удалить')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
         return 7
 
@@ -378,7 +380,7 @@ class BotAction:
 
     def restaurants(self):
         markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton('📍Ближайшие', callback_data='nearest_restaurants'))
+        markup.add(types.InlineKeyboardButton(self.get_message_text('nearest_rest_button', '📍Ближайшие'), callback_data='nearest_restaurants'))
         restaurants = Restaurant.objects.filter(telegram_bot=TelegramBot.objects.get(token=self.bot.token)).all()
         for restaurant in restaurants:
             markup.add(types.InlineKeyboardButton(restaurant.restaurantsettings.address, callback_data=f'restaurant_{restaurant.pk}_0'))
