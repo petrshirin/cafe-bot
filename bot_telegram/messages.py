@@ -317,6 +317,7 @@ class BotAction:
         return self.user.step
 
     def pay_card_repeat_menu(self, transaction_id):
+        print(1231231223)
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton('Повторить заказ', callback_data=f'cardrepeat_{transaction_id}'))
         markup.add(types.InlineKeyboardButton('➕Оплатить новой картой', callback_data=f'cardrepeatanother_{transaction_id}'))
