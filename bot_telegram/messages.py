@@ -859,8 +859,6 @@ class BotAction:
             for restaurant in restaurants:
                 if restaurant.restaurantsettings.time_opened < timezone.now().time() < restaurant.restaurantsettings.time_closed:
                     return True
-                else:
-                    return False
         else:
             restaurant = Restaurant.objects.filter(pk=restaurant_id).first()
             if restaurant:
