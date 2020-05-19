@@ -262,7 +262,7 @@ def inline_logic(c):
         except Exception as err:
             print(err)
             return  None
-        user.step = action.repeat_pay(transaction_id)
+        user.step = action.card_repeat(transaction_id)
 
     elif 'cardrepeatanother_' in c.data:
         try:
