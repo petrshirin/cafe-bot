@@ -302,7 +302,7 @@ class BotAction:
         transaction.count = count
 
         if not transaction:
-            message_text = self.get_message_text('invalid transaction', 'Транзакция устарела, закажите все товары заново')
+            message_text = self.get_message_text('invalid transaction', 'Транзакция устарела, закажите товары заново')
             self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                        text=message_text)
             return self.user.step
