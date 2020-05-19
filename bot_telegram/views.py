@@ -245,15 +245,6 @@ def inline_logic(c):
 
         user.step = action.repeat_pay(transaction_id)
 
-    elif 'cardrepeat_' in c.data:
-        try:
-            param = c.data.split('_')
-            transaction_id = int(param[1])
-        except Exception as err:
-            print(err)
-            return  None
-        user.step = action.repeat_pay(transaction_id)
-
     elif 'paycardrepeat_' in c.data:
         try:
             param = c.data.split('_')
@@ -263,6 +254,15 @@ def inline_logic(c):
             return None
 
         user.step = action.pay_card_repeat_menu(transaction_id)
+
+    elif 'cardrepeat_' in c.data:
+        try:
+            param = c.data.split('_')
+            transaction_id = int(param[1])
+        except Exception as err:
+            print(err)
+            return  None
+        user.step = action.repeat_pay(transaction_id)
 
     elif 'cardrepeatanother_' in c.data:
         try:
