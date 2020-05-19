@@ -299,7 +299,7 @@ class BotAction:
             count += product.product.price
             for addition in product.additions.all():
                 count += addition.price
-        transaction.count = count
+        transaction.count = count * 100
 
         if not transaction:
             message_text = self.get_message_text('invalid transaction', 'Транзакция устарела, закажите товары заново')
@@ -308,7 +308,7 @@ class BotAction:
             return self.user.step
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton('💳Оплатить картой', callback_data=f'paycardrepeat_{transaction.pk}'))
-        if self.user.bonus.count >= count / 100:
+        if self.user.bonus.count >= count:
             markup.add(types.InlineKeyboardButton('🎁Оплатить бонусами', callback_data=f'cardrepeatbonus_{transaction.pk}'))
         markup.add(types.InlineKeyboardButton('Вернуться к истории заказов', callback_data=f'basket_history'))
         message_text = self.get_message_text('buyproduct', 'Выберите действие\n\n')
