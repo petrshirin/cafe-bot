@@ -1,11 +1,8 @@
-from django.shortcuts import render
 from django.http import HttpResponse
-from telebot import TeleBot, types
-from .models import *
-from .messages import *
+
 from .menu_parser import *
-import os
-import re
+from .messages import *
+from telebot import TeleBot, types
 
 # Create your views here.
 
@@ -77,10 +74,10 @@ def text_messages(message):
     else:
         if user.step == 21:
             email = message.text
-            user.email = email
+            user.telegramusersettings.email = email
 
             try:
-                user.save()
+                user.telegramusersettings.save()
             except Exception as err:
                 print(err)
                 bot.send_message(message.chat.id, 'Неверно введен Email, попробуйте заного')
