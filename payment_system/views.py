@@ -30,7 +30,7 @@ def get_payment_tinkoff(request, user_id=None):
 
             if data.get('Status') == 'CONFIRMED':
                 if transaction.status > 1:
-                    return HttpResponse('ok', status=200)
+                    return HttpResponse('OK', status=200)
                 if data.get('RebillId'):
                     card = Card.objects.filter(card_number=data['Pan'], is_deleted=False, user=transaction.user).first()
                     if not card:
@@ -49,7 +49,8 @@ def get_payment_tinkoff(request, user_id=None):
                         bot.send_message(transaction.user.user_id, 'Оплата произведена, сейчас нет работающих менеджеров, '
                                                                    'Мы помним про ваш заказ, как только он освободится, вам придет оповещение')
                         transaction.status = 6
-                        return HttpResponse('ok', status=200)
+                        LOG.debug("OK 200")
+                        return HttpResponse('OK', status=200)
 
                 message_text = f'Заказ №{transaction.pk}\n\n'
                 message_text += f'{transaction.user.user_name} tel: {transaction.user.phone}\n\n'
@@ -64,6 +65,8 @@ def get_payment_tinkoff(request, user_id=None):
                 markup.add(types.InlineKeyboardButton('Принять заказ', callback_data=f'acceptorder_{transaction.pk}'))
                 bot.send_message(manager.user_id, message_text, reply_markup=markup)
                 calculate_cash_back(transaction)
+                LOG.debug('OK 200')
+                return HttpResponse("OK", status=200)
 
             elif data.get('Status') == 'PREAUTHORIZING':
                 transaction.status = 1
@@ -74,10 +77,13 @@ def get_payment_tinkoff(request, user_id=None):
                 bot = TeleBot(transaction.restaurant.telegram_bot.token)
                 bot.send_message(transaction.user.user_id, f'Заказ №{transaction.pk} отменен')
                 transaction.save()
+                LOG.debug('OK 200')
+                return HttpResponse("OK", status=200)
 
         else:
             return HttpResponse('fail transaction', status=401)
 
+    LOG.debug('OK 200')
     return HttpResponse("OK", status=200)
 
 
