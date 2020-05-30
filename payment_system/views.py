@@ -30,7 +30,8 @@ def get_payment_tinkoff(request, user_id=None):
 
             if data.get('Status') == 'CONFIRMED':
                 if transaction.status > 1:
-                    return HttpResponse('OK', status=200)
+                    LOG.debug('OK 200')
+                    return HttpResponse("OK", status=200)
                 if data.get('RebillId'):
                     card = Card.objects.filter(card_number=data['Pan'], is_deleted=False, user=transaction.user).first()
                     if not card:
@@ -71,6 +72,8 @@ def get_payment_tinkoff(request, user_id=None):
             elif data.get('Status') == 'PREAUTHORIZING':
                 transaction.status = 1
                 transaction.save()
+                LOG.debug('OK 200')
+                return HttpResponse("OK", status=200)
 
             elif data.get('Status') == 'REJECTED' or data.get('Status') == 'CANCELED' or data.get('Status') == 'DEADLINE_EXPIRED':
                 transaction.status = 3
