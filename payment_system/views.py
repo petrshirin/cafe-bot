@@ -75,6 +75,16 @@ def get_payment_tinkoff(request, user_id=None):
                 LOG.debug('OK 200')
                 return HttpResponse("OK", status=200)
 
+            elif data.get('Status') == 'REFUNDED':
+                transaction.status = 3
+                transaction.save()
+                LOG.debug('OK 200')
+                bot = TeleBot(transaction.restaurant.telegram_bot.token)
+                bot.send_message(transaction.user.user_id, f'Заказ №{transaction.pk} отменен')
+                manager = transaction.restaurant.managers.filter(is_active=True, is_free=True).first()
+                bot.send_message(manager.user_id, f'Заказ №{transaction.pk} отменен')
+                return HttpResponse("OK", status=200)
+
             elif data.get('Status') == 'REJECTED' or data.get('Status') == 'CANCELED' or data.get('Status') == 'DEADLINE_EXPIRED':
                 transaction.status = 3
                 bot = TeleBot(transaction.restaurant.telegram_bot.token)
