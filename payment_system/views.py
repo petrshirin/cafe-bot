@@ -78,7 +78,7 @@ def get_payment_tinkoff(request, user_id=None):
         else:
             return HttpResponse('fail transaction', status=401)
 
-    return HttpResponse(json.dumps('OK'), status=200, content_type="application/json")
+    return HttpResponse("OK", status=200)
 
 
 def calculate_cash_back(transaction):
