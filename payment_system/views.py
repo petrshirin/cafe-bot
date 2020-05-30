@@ -1,11 +1,11 @@
-from django.shortcuts import render
-from bot_telegram.models import Transaction, Card, Owner, Restaurant, UserSale, RestaurantManager
-from django.http import HttpResponse
-from bot_telegram.pay_system import PaySystem
-from bot_telegram.pay_systems.Tinkoff import TinkoffPay
+from bot_telegram.models import Transaction, Card, UserSale
 import json
 import logging
+
+from bot_telegram.models import Transaction, Card, UserSale
+from django.http import HttpResponse
 from telebot import TeleBot, types
+
 # Create your views here.
 
 LOG = logging.getLogger(__name__)
@@ -71,12 +71,14 @@ def get_payment_tinkoff(request, user_id=None):
 
             elif data.get('Status') == 'REJECTED' or data.get('Status') == 'CANCELED' or data.get('Status') == 'DEADLINE_EXPIRED':
                 transaction.status = 3
+                bot = TeleBot(transaction.restaurant.telegram_bot.token)
+                bot.send_message(transaction.user.user_id, f'Заказ №{transaction.pk} отменен')
                 transaction.save()
 
         else:
             return HttpResponse('fail transaction', status=401)
 
-    return HttpResponse('ok', status=200)
+    return HttpResponse('OK', status=200)
 
 
 def calculate_cash_back(transaction):
