@@ -795,7 +795,7 @@ class BotAction:
                 message_text = self.get_message_text('do_pay', 'Платеж выполняется').format(transaction.url)
                 self.bot.send_message(self.message.chat.id, message_text)
             else:
-                manager = restaurant.managers.objects.filter(is_active=True).first()
+                manager = restaurant.managers.filter(is_active=True).first()
                 message_text = self.get_message_text('init_payment_fail', f'Произошла ошибка при созании платежа, обратитесь к [администратору](https://t.me/{manager.name})')
                 self.bot.send_message(self.message.chat.id, message_text, parse_mode='Markdown')
         else:

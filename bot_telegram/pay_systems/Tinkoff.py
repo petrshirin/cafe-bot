@@ -18,8 +18,8 @@ class TinkoffPay:
             'OrderId': str(order_id),
             'Token': '',
             'Description': f'{description}',
-            #'Recurrent': 'Y',
-            #'CustomerKey': f'{customer_key}',
+            'Recurrent': 'Y',
+            'CustomerKey': f'{customer_key}',
             'NotificationURL': self.URL
         }
 
