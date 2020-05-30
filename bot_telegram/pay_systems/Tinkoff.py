@@ -30,10 +30,10 @@ class TinkoffPay:
                 "Email": email,
                 'Taxation': 'osn',
                 'Items': [{
-                    'Name': item.name,
+                    'Name': item.product.name,
                     'Quantity': 1,
-                    'Amount': item.price * 100,
-                    'Price': item.price * 100,
+                    'Amount': item.product.price * 100,
+                    'Price': item.product.price * 100,
                     "Tax": 'none'
                 } for item in products]
             }
