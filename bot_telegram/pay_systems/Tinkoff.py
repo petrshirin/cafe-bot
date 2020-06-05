@@ -154,7 +154,7 @@ class TinkoffPay:
             return None
 
     def do_sign(self, body):
-        body['password'] = self.password
+        body['Password'] = self.password
         sorted_body = {}
         data_str = ''
         # сортировка
