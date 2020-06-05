@@ -84,9 +84,9 @@ class TinkoffPay:
                 'RebillId': str(rebill_id),
                 'Token': '',
             }
-            if email:
-                body['SendEmail'] = True
-                body['InfoEmail'] = email
+            # if email:
+            #    body['SendEmail'] = True
+            #    body['InfoEmail'] = email
             body = self.do_sign(body)
             print(body)
             res = requests.post('https://securepay.tinkoff.ru/v2/Charge', json=body)
