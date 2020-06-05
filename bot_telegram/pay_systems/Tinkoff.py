@@ -167,7 +167,7 @@ class TinkoffPay:
 
         print(sorted_body)
         sorted_body['Token'] = sha256(bytes(data_str, encoding='utf-8')).hexdigest()
-        del sorted_body['password']
+        del sorted_body['Password']
         return sorted_body
 
 
