@@ -94,7 +94,7 @@ class TinkoffPay:
                 if res['Success'] is True:
                     return res
                 else:
-                    logging.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
+                    logging.error(f"{res['ErrorCode']} {res['Message']}")
                     return None
             else:
                 try:
