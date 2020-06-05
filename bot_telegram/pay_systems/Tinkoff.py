@@ -54,7 +54,6 @@ class TinkoffPay:
             'OrderId': str(order_id),
             'Token': '',
             'Description': f'{description}',
-            'CustomerKey': f'{customer_key}',
             'NotificationURL': self.URL
         }
 
@@ -166,6 +165,7 @@ class TinkoffPay:
         for item in sorted_body.values():
             data_str += str(item)
 
+        print(sorted_body)
         sorted_body['Token'] = sha256(bytes(data_str, encoding='utf-8')).hexdigest()
         del sorted_body['password']
         return sorted_body
