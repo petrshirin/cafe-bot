@@ -43,13 +43,13 @@ def send_welcome(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton('Главное Меню'))
     if telegram_bot.public_offer:
-        bot.send_document(chat_id=message.chat.id, data=open(telegram_bot.public_offer.path, 'rb'), caption=message_text, reply_markup=markup)
+        bot.send_document(chat_id=message.chat.id, data=open(telegram_bot.public_offer.path, 'rb'), caption=message_text, reply_markup=markup, parse_mode='markdown')
     elif telegram_bot.public_offer_url:
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton('Правила публичной оферты', url=telegram_bot.public_offer_url))
-        bot.send_message(chat_id=message.chat.id, text=message_text, reply_markup=markup)
+        bot.send_message(chat_id=message.chat.id, text=message_text, reply_markup=markup, parse_mode='markdown')
     else:
-        bot.send_message(chat_id=message.chat.id, text=message_text)
+        bot.send_message(chat_id=message.chat.id, text=message_text, parse_mode='markdown')
 
     action.main_menu()
 
