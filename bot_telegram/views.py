@@ -39,10 +39,11 @@ def send_welcome(message):
 Правила публичной оферты Карты принимаются после первого платежа в системе
 Давай уже закажем!
 ''')
+    message_text = message_text.format(user.user_name, telegram_bot.name)
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton('Главное Меню'))
     if telegram_bot.public_offer:
-        bot.send_document(chat_id=message.chat.id, data=open(telegram_bot.public_offer.path, 'rb'), caption=message_text.format(user.user_name, telegram_bot.name), reply_markup=markup)
+        bot.send_document(chat_id=message.chat.id, data=open(telegram_bot.public_offer.path, 'rb'), caption=message_text, reply_markup=markup)
     elif telegram_bot.public_offer_url:
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton('Правила публичной оферты', url=telegram_bot.public_offer_url))
