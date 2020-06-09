@@ -1,7 +1,10 @@
 import requests
 from hashlib import sha256
 import logging
+import psycopg2
 import json
+
+LOG = logging.getLogger(__name__)
 
 
 class TinkoffPay:
@@ -45,7 +48,7 @@ class TinkoffPay:
             res = res.json()
             return res
         else:
-            logging.error(res.json()['ErrorCode'], res.json()['Message'], res.json()['Details'])
+            LOG.error(res.json()['ErrorCode'], res.json()['Message'], res.json()['Details'])
 
     def do_pay(self, rebill_id, amount, order_id, description, customer_key, email=None, products=None):
         body = {
@@ -76,13 +79,15 @@ class TinkoffPay:
 
         if res.ok:
             res = res.json()
-            print(res)
+            LOG.debug(res)
+
             body = {
                 'TerminalKey': self.terminal_key,
                 'PaymentId': str(res['PaymentId']),
                 'RebillId': str(rebill_id),
                 'Token': '',
             }
+            LOG.debug(res['PaymentId'])
             # if email:
             #    body['SendEmail'] = True
             #    body['InfoEmail'] = email
@@ -94,12 +99,12 @@ class TinkoffPay:
                 if res['Success'] is True:
                     return res
                 else:
-                    logging.error(f"{res['ErrorCode']} {res['Message']}")
+                    LOG.error(f"{res['ErrorCode']} {res['Message']}")
                     return None
             else:
                 try:
                     res = res.json()
-                    logging.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
+                    LOG.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
                 except json.JSONDecodeError:
                     pass
                 return None
@@ -107,7 +112,7 @@ class TinkoffPay:
         else:
             try:
                 res = res.json()
-                logging.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
+                LOG.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
             except json.JSONDecodeError:
                 pass
             return None
@@ -127,7 +132,7 @@ class TinkoffPay:
         else:
             try:
                 res = res.json()
-                logging.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
+                LOG.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
             except json.JSONDecodeError:
                 pass
             return None
@@ -148,7 +153,7 @@ class TinkoffPay:
         else:
             try:
                 res = res.json()
-                logging.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
+                LOG.error(f"{res['ErrorCode']} {res['Message']} {res['Details']}")
             except json.JSONDecodeError:
                 pass
             return None
