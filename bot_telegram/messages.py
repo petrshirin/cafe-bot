@@ -621,7 +621,7 @@ class BotAction:
                 markup.add(types.InlineKeyboardButton('💳Оплатить картой', callback_data=f'paycardproduct_{restaurant.pk}_{user_product.pk}'))
                 if self.user.bonus.count >= user_product.product.price + additions_price:
                     markup.add(types.InlineKeyboardButton('🎁Оплатить бонусами', callback_data=f'productbonuspay_{restaurant.pk}_{user_product.pk}'))
-                markup.add(types.InlineKeyboardButton('🛒Перейти в корзину', callback_data=f'basket'))
+                # markup.add(types.InlineKeyboardButton('🛒Перейти в корзину', callback_data=f'basket'))
                 markup.add(types.InlineKeyboardButton('Вернуться к продукту', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
                 message_text = self.get_message_text('buyproduct', 'Выберите действие')
                 self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)

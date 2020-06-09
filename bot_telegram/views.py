@@ -3,9 +3,11 @@ from django.http import HttpResponse
 from .menu_parser import *
 from .messages import *
 from telebot import TeleBot, types
+import logging
 
 # Create your views here.
 
+LOG = logging.getLogger(__name__)
 bot = TeleBot('')
 
 
@@ -13,9 +15,9 @@ def get_web_hook(request, token):
     bot_orm = TelegramBot.objects.filter(token=token).first()
     json_data = json.loads(request.body)
     if not bot_orm:
-        print('fail bot')
+        LOG.error('fail bot')
         return HttpResponse('fail bot', status=500)
-    print(str(json_data).encode('utf-8'))
+    LOG.debug(str(json_data).encode('utf-8'))
     global bot
     bot.token = bot_orm.token
     request_body_dict = json_data
@@ -31,20 +33,23 @@ def send_welcome(message):
     if not user:
         user = TelegramUser(user_id=message.chat.id, telegram_bot=telegram_bot, role=TelegramUserRole.objects.get(pk=1), user_name=message.from_user.first_name)
         user.save()
-    message_to_send = TelegramMessage.objects.filter(tag='welcome_message').first()
-    if not message_to_send:
-        message_text = '''Привет, {}
+    action = BotAction(bot, message, user)
+    message_text = action.get_message_text('welcome_message', '''Привет, {}
 Добро пожаловать в бота {}
 Правила публичной оферты Карты принимаются после первого платежа в системе
-Давай уже закажем первый кофе!
-На первый заказ через бота будет действовать скидка 50%
-'''
-    else:
-        message_text = message_to_send.text
+Давай уже закажем!
+''')
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add(types.KeyboardButton('Главное Меню'))
-    bot.send_document(chat_id=message.chat.id, data=open(telegram_bot.public_offer.path, 'rb'), caption=message_text.format(user.user_name, telegram_bot.name), reply_markup=markup)
-    action = BotAction(bot, message, user)
+    if telegram_bot.public_offer:
+        bot.send_document(chat_id=message.chat.id, data=open(telegram_bot.public_offer.path, 'rb'), caption=message_text.format(user.user_name, telegram_bot.name), reply_markup=markup)
+    elif telegram_bot.public_offer_url:
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(types.InlineKeyboardButton('Правила публичной оферты', url=telegram_bot.public_offer_url))
+        bot.send_message(chat_id=message.chat.id, text=message_text, reply_markup=markup)
+    else:
+        bot.send_message(chat_id=message.chat.id, text=message_text)
+
     action.main_menu()
 
 
@@ -54,11 +59,14 @@ def text_messages(message):
     action = BotAction(bot, message, user)
     if not action.check_restaurant_time():
         bot.send_message(message.chat.id, action.get_message_text('all_restaurant_closed', 'Все заведения сейчас закрыты'))
-    elif message.text.lower() == '🏠главное меню':
+    if message.text.lower() == '🏠главное меню':
         user.step = action.main_menu()
     elif message.text.lower() == 'главное меню':
         user.step = action.main_menu()
     elif message.text.lower() == action.get_message_text('restaurant_button_name', 'заведения').lower():
+        #if not action.check_restaurant_time():
+        #    bot.send_message(message.chat.id, action.get_message_text('all_restaurant_closed', 'Все заведения сейчас закрыты'))
+        #    return
         user.step = action.restaurants()
     elif message.text.lower() == '⚙️настройки':
         action.settings()
@@ -79,7 +87,7 @@ def text_messages(message):
             try:
                 user.telegramusersettings.save()
             except Exception as err:
-                print(err)
+                LOG.error(err)
                 bot.send_message(message.chat.id, 'Неверно введен Email, попробуйте заного')
                 user.step = action.add_email()
             user.step = action.cheques(True)
@@ -114,14 +122,14 @@ def get_user_phone(message):
 def get_user_location(message):
     user = TelegramUser.objects.get(user_id=message.chat.id)
     action = BotAction(bot, message, user)
-    print(user.step)
+    LOG.debug(user.step)
     if message.location is not None:
         user.step = action.nearest_restaurant(message.location.latitude, message.location.longitude)
 
 
 @bot.callback_query_handler(func=lambda c: True)
 def inline_logic(c):
-    print(c.data)
+    LOG.debug(c.data)
     user = TelegramUser.objects.get(user_id=c.message.chat.id)
     action = BotAction(bot, c.message, user)
 
@@ -130,7 +138,7 @@ def inline_logic(c):
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
 
         user.step = action.accept_order(transaction_id)
@@ -140,7 +148,7 @@ def inline_logic(c):
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.confirm_order(transaction_id)
 
@@ -170,7 +178,7 @@ def inline_logic(c):
             param = c.data.split('_')
             user_sale_id = param[1]
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.sale(user_sale_id)
 
@@ -188,7 +196,7 @@ def inline_logic(c):
             param = c.data.split('_')
             product = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.product_basket(product)
 
@@ -200,7 +208,7 @@ def inline_logic(c):
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.pay_card_current_order(transaction_id)
 
@@ -209,7 +217,7 @@ def inline_logic(c):
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.card_complete_order_another(transaction_id)
 
@@ -218,7 +226,7 @@ def inline_logic(c):
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.card_complete_order_bonus(transaction_id)
 
@@ -227,7 +235,7 @@ def inline_logic(c):
             param = c.data.split('_')
             user_product = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
 
         user.step = action.repeat_one_more_product(user_product)
@@ -237,7 +245,7 @@ def inline_logic(c):
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
 
         user.step = action.repeat_pay(transaction_id)
@@ -247,7 +255,7 @@ def inline_logic(c):
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
 
         user.step = action.pay_card_repeat_menu(transaction_id)
@@ -257,8 +265,8 @@ def inline_logic(c):
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
-            print(err)
-            return  None
+            LOG.error(err)
+            return None
         user.step = action.card_repeat(transaction_id)
 
     elif 'cardrepeatanother_' in c.data:
@@ -266,7 +274,7 @@ def inline_logic(c):
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.card_repeat_another(transaction_id)
 
@@ -275,7 +283,7 @@ def inline_logic(c):
             param = c.data.split('_')
             transaction_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.card_repeat_bonus(transaction_id)
 
@@ -284,7 +292,7 @@ def inline_logic(c):
             param = c.data.split('_')
             card_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.show_card(card_id)
 
@@ -294,7 +302,7 @@ def inline_logic(c):
             param = c.data.split('_')
             card_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.delete_card( card_id)
 
@@ -306,7 +314,7 @@ def inline_logic(c):
             param = c.data.split('_')
             user_sale_id = int(param[1])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         user.step = action.sale(user_sale_id)
 
@@ -316,7 +324,7 @@ def inline_logic(c):
             rest_id = int(param[1])
             page = int(param[2])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return None
         restaurant = Restaurant.objects.filter(pk=rest_id).first()
         if not action.check_restaurant_time(rest_id):
@@ -339,7 +347,7 @@ def inline_logic(c):
             category_id = int(param[2])
             page = int(param[3])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return
             pass
         restaurant = Restaurant.objects.filter(pk=rest_id).first()
@@ -347,7 +355,7 @@ def inline_logic(c):
             menu = restaurant.menu_struct
             menu_struct = MenuStruct(menu, -1)
             category = menu_struct.get_category(category_id)
-            print(category)
+            LOG.debug(category)
             if category is None:
                 category = menu_struct
             if category.type == 'products':
@@ -363,9 +371,9 @@ def inline_logic(c):
             rest_id = int(param[1])
             product_id = int(param[2])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return
-        print(rest_id, product_id)
+        LOG.debug(rest_id, product_id)
         user.step = action.buy_product(rest_id, product_id)
 
     elif 'paycardproduct_' in c.data:
@@ -374,9 +382,9 @@ def inline_logic(c):
             rest_id = int(param[1])
             product_id = int(param[2])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return
-        print(rest_id, product_id)
+        LOG.debug(rest_id, product_id)
         user.step = action.pay_card_product(rest_id, product_id)
 
     elif 'product_' in c.data:
@@ -385,7 +393,7 @@ def inline_logic(c):
             rest_id = int(param[1])
             product_id = int(param[2])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return
         restaurant = Restaurant.objects.filter(pk=rest_id).first()
         if restaurant:
@@ -401,7 +409,7 @@ def inline_logic(c):
             rest_id = int(param[1])
             product_id = int(param[2])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return
         user_product = TelegramUserProduct.objects.filter(pk=product_id).first()
         if user_product:
@@ -413,7 +421,7 @@ def inline_logic(c):
             rest_id = int(param[1])
             product_id = int(param[2])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return
         user_product = TelegramUserProduct.objects.filter(pk=product_id).first()
         if user_product:
@@ -427,7 +435,7 @@ def inline_logic(c):
             product_id = int(param[2])
             addition_id = int(param[3])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return
         restaurant = Restaurant.objects.filter(pk=rest_id).first()
         user_product = TelegramUserProduct.objects.filter(pk=product_id).first()
@@ -442,7 +450,7 @@ def inline_logic(c):
             rest_id = int(param[1])
             product_id = int(param[2])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return
         user.step = action.pay_another_card(rest_id, product_id)
 
@@ -453,7 +461,7 @@ def inline_logic(c):
             user_card_id = int(param[2])
             transaction_id = int(param[3])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return
         user.step = action.choice_card(rest_id, transaction_id, user_card_id)
 
@@ -463,7 +471,7 @@ def inline_logic(c):
             restaurant_id = int(param[1])
             user_product_id = int(param[2])
         except Exception as err:
-            print(err)
+            LOG.error(err)
             return
         user_product = TelegramUserProduct.objects.filter(pk=user_product_id).first()
         if not user_product:
