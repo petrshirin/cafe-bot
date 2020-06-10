@@ -3,6 +3,7 @@ from .models import *
 from .exceptions import NotEnoughBonuses
 from .pay_systems.Tinkoff import TinkoffPay
 from django.conf import settings
+from telebot import TeleBot, types
 
 
 class PaySystem:
@@ -67,7 +68,30 @@ class PaySystem:
                 transaction.card = card
                 print(response)
                 transaction.payment_id = response['PaymentId']
-                transaction.status = 1
+                transaction.status = 2
+                transaction.save()
+                bot = TeleBot(transaction.restaurant.telegram_bot.token)
+                manager = transaction.restaurant.managers.filter(is_active=True, is_free=True).first()
+                if not manager:
+                    manager = transaction.restaurant.managers.filter(is_active=True).first()
+                    if not manager:
+                        bot.send_message(transaction.user.user_id, 'Оплата произведена, сейчас нет работающих менеджеров, '
+                                                                   'Мы помним про ваш заказ, как только он освободится, вам придет оповещение')
+                        transaction.status = 6
+
+                message_text = f'Заказ №{transaction.pk}\n\n'
+                message_text += f'{transaction.user.user_name} tel: {transaction.user.phone}\n\n'
+                for product in transaction.products.all():
+                    i = 1
+                    message_text += f'{product.product.name} {product.product.volume}{product.product.unit}\n'
+                    for addition in product.additions.all():
+                        message_text += f'{i}. {addition.name}\n'
+                        i += 1
+                    message_text += '\n'
+                markup = types.InlineKeyboardMarkup(row_width=1)
+                markup.add(types.InlineKeyboardButton('Принять заказ', callback_data=f'acceptorder_{transaction.pk}'))
+                bot.send_message(manager.user_id, message_text, reply_markup=markup)
+                calculate_cash_back(transaction)
             else:
                 transaction.card = card
                 transaction.status = 3
@@ -100,3 +124,11 @@ class PaySystem:
             return True
         return False
 
+
+
+def calculate_cash_back(transaction):
+    user = transaction.user
+    user_cash_back_sale = UserSale.objects.filter(user=user, sale__is_cash_back=True).first()
+    if user_cash_back_sale:
+        user.bonus.count += transaction.count // 100 * user_cash_back_sale.sale.percent
+        user.bonus.save()
