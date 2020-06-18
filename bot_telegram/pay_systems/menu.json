@@ -204,6 +204,16 @@
           "price": 140,
           "time_cooking": "01:00:00",
           "additions": null
+        },
+        {
+          "id": 10,
+          "name": "Test Product",
+          "description": "Test Product",
+          "volume": "550",
+          "unit": "мл",
+          "price": 2,
+          "time_cooking": "01:00:00",
+          "additions": null
         }
       ],
       "categories": [

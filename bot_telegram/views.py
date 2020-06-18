@@ -56,8 +56,8 @@ def send_welcome(message):
 def text_messages(message):
     user = TelegramUser.objects.get(user_id=message.chat.id)
     action = BotAction(bot, message, user)
-    if not action.check_restaurant_time():
-        bot.send_message(message.chat.id, action.get_message_text('all_restaurant_closed', 'Все заведения сейчас закрыты'))
+    #if not action.check_restaurant_time():
+    #    bot.send_message(message.chat.id, action.get_message_text('all_restaurant_closed', 'Все заведения сейчас закрыты'))
     if message.text.lower() == '🏠главное меню':
         user.step = action.main_menu()
     elif message.text.lower() == 'главное меню':
