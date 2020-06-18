@@ -110,10 +110,11 @@ def get_user_phone(message):
     if phone:
         user.phone = phone
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-        markup.add(types.KeyboardButton(action.get_message_text('restaurant_button_name', 'Заведения')), types.KeyboardButton('Корзина'))
-        markup.add(types.KeyboardButton('Скидки и бонусы'), types.KeyboardButton('Настройки'))
+        markup.add(types.KeyboardButton(action.get_message_text('restaurant_button_name', 'Заведения')), types.KeyboardButton('🛒Корзина'))
+        markup.add(types.KeyboardButton('🎁Скидки и бонусы'), types.KeyboardButton('⚙️Настройки'))
         bot.send_message(message.chat.id, 'Номер сохранен', reply_markup=markup)
-        user.step = 0
+
+    user.step = 0
     user.save()
 
 
