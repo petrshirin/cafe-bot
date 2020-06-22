@@ -5,6 +5,9 @@ from .menu_parser import *
 from .pay_system import *
 from django.db.models import Q
 from django.utils import timezone
+import logging
+
+LOG = logging.getLogger(__name__)
 
 
 class BotAction:
@@ -319,7 +322,6 @@ class BotAction:
         return self.user.step
 
     def pay_card_repeat_menu(self, transaction_id):
-        print(1231231223)
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton('Повторить заказ', callback_data=f'cardrepeat_{transaction_id}'))
         markup.add(types.InlineKeyboardButton('➕Оплатить новой картой', callback_data=f'cardrepeatanother_{transaction_id}'))
@@ -555,7 +557,7 @@ class BotAction:
                 self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
                                            message_id=self.message.message_id, reply_markup=markup)
             except Exception as err:
-                print(err)
+                LOG.error(err)
                 self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.caption + f'\n\n{message_text}',
                                               message_id=self.message.message_id, reply_markup=markup)
 
@@ -565,7 +567,7 @@ class BotAction:
                 self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
                                            message_id=self.message.message_id, reply_markup=markup)
             except Exception as err:
-                print(err)
+                LOG.error(err)
                 self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.caption + f'\n\n{message_text}',
                                               message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
@@ -598,7 +600,7 @@ class BotAction:
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text + f'\n\n{addition_added}',
                                        message_id=self.message.message_id, reply_markup=markup)
         except Exception as err:
-            print(err)
+            LOG.error(err)
             self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=message_text + f'\n\n{addition_added}',
                                           message_id=self.message.message_id, reply_markup=markup)
         return self.user.step

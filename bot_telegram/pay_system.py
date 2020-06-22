@@ -4,6 +4,10 @@ from .exceptions import NotEnoughBonuses
 from .pay_systems.Tinkoff import TinkoffPay
 from django.conf import settings
 from telebot import TeleBot, types
+import logging
+
+
+LOG = logging.getLogger(__name__)
 
 
 class PaySystem:
@@ -66,7 +70,7 @@ class PaySystem:
             response = self.worker.do_pay(card.rebill_id, transaction.count, transaction.pk, "Cafe bot payment", user.user_id, user.telegramusersettings.email)
             if response:
                 transaction.card = card
-                print(response)
+                LOG.debug(response)
                 transaction.payment_id = response['PaymentId']
                 transaction.status = 2
                 transaction.save()
