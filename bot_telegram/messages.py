@@ -240,7 +240,8 @@ class BotAction:
 
     def pay_card_current_order(self, transaction_id):
         markup = self.card_complete_order(transaction_id)
-
+        if len(markup.keyboard):
+            return self.card_complete_order_another(transaction_id)
         markup.add(types.InlineKeyboardButton('➕Оплатить новой картой', callback_data=f'cardcompleteanotherorder_{transaction_id}'))
         message_text = self.get_message_text('choice_card_type', 'Выберите Способ оплаты')
         self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
@@ -650,6 +651,8 @@ class BotAction:
 
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup = self.pay_card(restaurant_id, transaction, markup)
+        if len(markup.keyboard) == 0:
+            return self.pay_another_card(restaurant_id, user_product_id)
         markup.add(types.InlineKeyboardButton('➕Добавить новую карту', callback_data=f'productpayanother_{restaurant_id}_{user_product_id}'))
         markup.add(types.InlineKeyboardButton('Назад', callback_data=f'buyproduct_{restaurant_id}_{user_product.product.pk}'))
         message_text = self.get_message_text('choice_card_type', 'Выберите Способ оплаты')
