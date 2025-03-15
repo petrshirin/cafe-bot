@@ -475,7 +475,8 @@ def inline_logic(c):
             return
         user_product = TelegramUserProduct.objects.filter(pk=user_product_id).first()
         if not user_product:
-            bot.send_message(chat_id=action.message.chat.id, text="такой продукт больше не существует, выебрите его заного")
+            bot.send_message(chat_id=action.message.chat.id,
+                             text="такой продукт больше не существует, выберите его заново")
             return 1
 
         user_product.is_store = True

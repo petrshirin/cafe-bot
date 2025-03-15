@@ -7,6 +7,8 @@ from django.db.models import Q
 from django.utils import timezone
 import logging
 
+from .utils import calculate_max_pages
+
 LOG = logging.getLogger(__name__)
 
 
@@ -33,7 +35,8 @@ class BotAction:
         transaction.status = 4
         transaction.save()
         markup.add(types.InlineKeyboardButton('✅Завершить заказ', callback_data=f'confirmorder_{transaction_id}'))
-        self.bot.edit_message_text(chat_id=self.user.user_id, text=self.message.text, message_id=self.message.message_id, reply_markup=markup)
+        self.bot.edit_message_text(chat_id=self.user.user_id, text=self.message.text,
+                                   message_id=self.message.message_id, reply_markup=markup)
         self.bot.send_message(transaction.user.user_id, message_text_user)
         return self.user.step
 
@@ -41,16 +44,20 @@ class BotAction:
         transaction = Transaction.objects.filter(pk=transaction_id).first()
         if not transaction:
             pass
-        message_text_user = self.get_message_text('accept_order', f'Заказ №{transaction.pk}, покажите это сообщение или чек об оплате')
+        message_text_user = self.get_message_text('accept_order',
+                                                  f'Заказ №{transaction.pk}, покажите это сообщение или чек об оплате')
         transaction.status = 5
         transaction.save()
-        self.bot.edit_message_text(chat_id=self.user.user_id, text="ВЫПОЛНЕН\n\n" + self.message.text, message_id=self.message.message_id)
+        self.bot.edit_message_text(chat_id=self.user.user_id,
+                                   text="ВЫПОЛНЕН\n\n" + self.message.text,
+                                   message_id=self.message.message_id)
         self.bot.send_message(transaction.user.user_id, message_text_user)
         return self.user.step
 
     def main_menu(self):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
-        markup.add(types.KeyboardButton(self.get_message_text('restaurant_button_name', 'Заведения')), types.KeyboardButton('🛒Корзина'))
+        markup.add(types.KeyboardButton(self.get_message_text('restaurant_button_name', 'Заведения')),
+                   types.KeyboardButton('🛒Корзина'))
         markup.add(types.KeyboardButton('🎁Скидки и бонусы'), types.KeyboardButton('⚙️Настройки'))
         message_text = self.get_message_text('main_menu', 'Главное меню')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
@@ -104,7 +111,8 @@ class BotAction:
         if card:
             markup.add(types.InlineKeyboardButton('Удалить', callback_data=f'deletecard_{card.pk}'))
             markup.add(types.InlineKeyboardButton('Назад', callback_data='my_cards'))
-            message_text = self.get_message_text('card', 'Ваша карта:\n\n{}\n\nВыберите действие.').format(card.card_number)
+            message_text = self.get_message_text('card',
+                                                 'Ваша карта:\n\n{}\n\nВыберите действие.').format(card.card_number)
             self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
                                        message_id=self.message.message_id, reply_markup=markup)
             return 31
@@ -133,7 +141,8 @@ class BotAction:
 
     def bonus_systems(self):
         markup = types.InlineKeyboardMarkup(row_width=1)
-        message_text = self.get_message_text('bonus_systems', 'Ваши 🎁Скидки и бонусы, нажмите, для подробной информации')
+        message_text = self.get_message_text('bonus_systems',
+                                             'Ваши 🎁Скидки и бонусы, нажмите, для подробной информации')
         sales = UserSale.objects.filter(sale__bot=self.user.telegram_bot, user=self.user)
         for sale in sales:
             markup.add(types.InlineKeyboardButton(f'{sale.sale.name}', callback_data=f'sale_{sale.pk}'))
@@ -166,14 +175,18 @@ class BotAction:
             addition_price = 0
             for addition in product.additions.all():
                 addition_price += addition.price
-            markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}{"+" + str(addition_price) if addition_price else ""}руб.)',
-                                                  callback_data=f'productbasket_{product.id}'))
+            markup.add(types.InlineKeyboardButton(
+                f'{product.product.name} {product.product.volume}{product.product.unit} '
+                f'({product.product.price}{"+" + str(addition_price) if addition_price else ""}руб.)',
+                callback_data=f'productbasket_{product.struct_key}'))
 
         if products:
             markup.add(types.InlineKeyboardButton('✅Оплатить', callback_data='complete_current_order'))
             markup.add(types.InlineKeyboardButton('❌Очистить корзину', callback_data='clear_basket'),
                        types.InlineKeyboardButton('📖История заказов', callback_data='basket_history'))
-            markup.add(types.InlineKeyboardButton('↩️Назад к выбору продуктов', callback_data=f'restaurant_{user_basket.products.all()[0].restaurant.pk}_0'))
+            markup.add(types.InlineKeyboardButton(
+                '↩️Назад к выбору продуктов',
+                callback_data=f'restaurant_{user_basket.products.all()[0].restaurant.pk}_0'))
             message_text = self.get_message_text('basket', 'Ваша корзина\n\nНажмите на продукт чтобы удалить')
         else:
             message_text = self.get_message_text('void_basket', 'Ваша корзина')
@@ -194,7 +207,9 @@ class BotAction:
         transactions = Transaction.objects.filter(user=self.user, status=5, is_bonuses=False).all()
         markup = types.InlineKeyboardMarkup(row_width=1)
         for transaction in transactions:
-            markup.add(types.InlineKeyboardButton(f'{transaction.pk} {transaction.restaurant.name} {transaction.count / 100}руб.', callback_data=f'repeatpay_{transaction.pk}'))
+            markup.add(types.InlineKeyboardButton(
+                f'{transaction.pk} {transaction.restaurant.name} {transaction.count / 100}руб.',
+                callback_data=f'repeatpay_{transaction.pk}'))
         markup.add(types.InlineKeyboardButton('Назад', callback_data='basket'))
         message_text = self.get_message_text('basket_history', 'Ваша история заказов')
         self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
@@ -211,13 +226,18 @@ class BotAction:
         markup = types.InlineKeyboardMarkup(row_width=2)
         user_basket = self.user.telegrambasket
         for product in user_basket.products.all():
-            markup.add(types.InlineKeyboardButton(f'{product.product.name} {product.product.volume}{product.product.unit} ({product.product.price}руб.)', callback_data=f'productbasket_{product.id}'))
+            markup.add(types.InlineKeyboardButton(f'{product.product.name} '
+                                                  f'{product.product.volume}{product.product.unit} '
+                                                  f'({product.product.price}руб.)',
+                                                  callback_data=f'productbasket_{product.struct_key}'))
         markup.add(types.InlineKeyboardButton('❌Очистить корзину', callback_data='clear_basket'),
                    types.InlineKeyboardButton('📖История заказов', callback_data='basket_history'))
         if user_basket.products.all():
-            markup.add(types.InlineKeyboardButton('✅Завершить текущий заказ', callback_data='complete_current_order'))
+            markup.add(types.InlineKeyboardButton('✅Завершить текущий заказ',
+                                                  callback_data='complete_current_order'))
         message_text = self.get_message_text('basket', 'Ваша корзина\n\n Нажмите на продукт чтобы удалить')
-        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
+                                   message_id=self.message.message_id, reply_markup=markup)
 
     def complete_current_order(self):
         user_products = self.user.telegrambasket.products.all()
@@ -232,9 +252,11 @@ class BotAction:
         transaction.count = count
         transaction.save()
         markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton('💳Оплатить картой', callback_data=f'paycardcompleteorder_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('💳Оплатить картой',
+                                              callback_data=f'paycardcompleteorder_{transaction.pk}'))
         if self.user.bonus.count >= count / 100:
-            markup.add(types.InlineKeyboardButton('🎁Оплатить бонусами', callback_data=f'cardcompletebonusorder_{transaction.pk}'))
+            markup.add(types.InlineKeyboardButton('🎁Оплатить бонусами',
+                                                  callback_data=f'cardcompletebonusorder_{transaction.pk}'))
         markup.add(types.InlineKeyboardButton('В корзину', callback_data=f'basket'))
         message_text = self.get_message_text('buyproduct', 'Выберите действие\n\n')
         self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
@@ -245,7 +267,8 @@ class BotAction:
         markup = self.card_complete_order(transaction_id)
         if len(markup.keyboard):
             return self.card_complete_order_another(transaction_id)
-        markup.add(types.InlineKeyboardButton('➕Оплатить новой картой', callback_data=f'cardcompleteanotherorder_{transaction_id}'))
+        markup.add(types.InlineKeyboardButton('➕Оплатить новой картой',
+                                              callback_data=f'cardcompleteanotherorder_{transaction_id}'))
         message_text = self.get_message_text('choice_card_type', 'Выберите Способ оплаты')
         self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
         return self.user.step
@@ -256,7 +279,9 @@ class BotAction:
 
         user_cards = Card.objects.filter(~Q(rebill_id=None), is_deleted=False, user=self.user).all()
         for user_card in user_cards:
-            markup.add(types.InlineKeyboardButton(f'{user_card.card_number}', callback_data=f'choicecard_{transaction.restaurant.pk}_{user_card.pk}_{transaction.pk}'))
+            markup.add(types.InlineKeyboardButton(f'{user_card.card_number}',
+                                                  callback_data=f'choicecard_{transaction.restaurant.pk}_'
+                                                                f'{user_card.pk}_{transaction.pk}'))
         user_basket = self.user.telegrambasket
         for product in user_basket.products.all():
             product.is_store = True
@@ -274,15 +299,19 @@ class BotAction:
             user_product.save()
 
         owner = restaurant.telegram_bot.owner
-        payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
+        payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay,
+                                   owner.ownersettings.terminal_key, owner.ownersettings.password)
         transaction = payment_system.init_pay(self.user, transaction)
 
         if transaction.url:
-            message_text = self.get_message_text('payment_link', 'Ваша ссылка на оплату\n\n{}\n').format(transaction.url)
+            message_text = self.get_message_text('payment_link',
+                                                 'Ваша ссылка на оплату\n\n{}\n').format(transaction.url)
             self.bot.send_message(self.message.chat.id, message_text)
         else:
             manager = restaurant.managers.objects.filter(is_active=True).first()
-            message_text = self.get_message_text('init_payment_fail', f'Произошла ошибка при созании платежа, обратитесь к [администратору](https://t.me/{manager.name})')
+            message_text = self.get_message_text('init_payment_fail',
+                                                 f'Произошла ошибка при созании платежа, обратитесь к '
+                                                 f'[администратору](https://t.me/{manager.name})')
             self.bot.send_message(self.message.chat.id, message_text, parse_mode='Markdown')
         user_basket = self.user.telegrambasket
         user_basket.products.clear()
@@ -307,15 +336,19 @@ class BotAction:
         transaction.count = count * 100
 
         if not transaction:
-            message_text = self.get_message_text('invalid transaction', 'Транзакция устарела, закажите товары заново')
+            message_text = self.get_message_text('invalid transaction',
+                                                 'Транзакция устарела, закажите товары заново')
             self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                        text=message_text)
             return self.user.step
         markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton('💳Оплатить картой', callback_data=f'paycardrepeat_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('💳Оплатить картой',
+                                              callback_data=f'paycardrepeat_{transaction.pk}'))
         if self.user.bonus.count >= count:
-            markup.add(types.InlineKeyboardButton('🎁Оплатить бонусами', callback_data=f'cardrepeatbonus_{transaction.pk}'))
-        markup.add(types.InlineKeyboardButton('Вернуться к истории заказов', callback_data=f'basket_history'))
+            markup.add(types.InlineKeyboardButton('🎁Оплатить бонусами',
+                                                  callback_data=f'cardrepeatbonus_{transaction.pk}'))
+        markup.add(types.InlineKeyboardButton('Вернуться к истории заказов',
+                                              callback_data=f'basket_history'))
         message_text = self.get_message_text('buyproduct', 'Выберите действие\n\n')
         self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
                                    text=message_text, reply_markup=markup)
@@ -323,8 +356,10 @@ class BotAction:
 
     def pay_card_repeat_menu(self, transaction_id):
         markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton('Повторить заказ', callback_data=f'cardrepeat_{transaction_id}'))
-        markup.add(types.InlineKeyboardButton('➕Оплатить новой картой', callback_data=f'cardrepeatanother_{transaction_id}'))
+        markup.add(types.InlineKeyboardButton('Повторить заказ',
+                                              callback_data=f'cardrepeat_{transaction_id}'))
+        markup.add(types.InlineKeyboardButton('➕Оплатить новой картой',
+                                              callback_data=f'cardrepeatanother_{transaction_id}'))
         markup.add(types.InlineKeyboardButton('Назад', callback_data=f'repeatpay_{transaction_id}'))
         message_text = self.get_message_text('choice_card_type', 'Выберите Способ оплаты')
         self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
@@ -332,7 +367,8 @@ class BotAction:
 
     def card_repeat(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
-        transaction_new = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
+        transaction_new = Transaction(user=transaction.user, count=transaction.count,
+                                      restaurant=transaction.restaurant, card=transaction.card)
         transaction_new.save()
 
         for product in transaction.products.all():
@@ -341,7 +377,8 @@ class BotAction:
         transaction_new.save()
 
         owner = transaction_new.restaurant.telegram_bot.owner
-        payment_system = PaySystem(transaction_new.restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
+        payment_system = PaySystem(transaction_new.restaurant.restaurantsettings.payment_type, TinkoffPay,
+                                   owner.ownersettings.terminal_key, owner.ownersettings.password)
         transaction_new = payment_system.do_pay(self.user, transaction_new, transaction_new.card)
         transaction_new.save()
         if transaction_new.payment_id:
@@ -352,7 +389,8 @@ class BotAction:
 
     def card_repeat_another(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
-        transaction_new = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
+        transaction_new = Transaction(user=transaction.user, count=transaction.count,
+                                      restaurant=transaction.restaurant, card=transaction.card)
         transaction_new.save()
 
         for product in transaction.products.all():
@@ -363,21 +401,26 @@ class BotAction:
         restaurant = transaction_new.restaurant
 
         owner = restaurant.telegram_bot.owner
-        payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
+        payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay,
+                                   owner.ownersettings.terminal_key, owner.ownersettings.password)
         transaction_new = payment_system.init_pay(self.user, transaction_new)
 
         if transaction_new.url:
-            message_text = self.get_message_text('payment_link', 'Ваша ссылка на оплату\n\n{}\n').format(transaction_new.url)
+            message_text = self.get_message_text('payment_link',
+                                                 'Ваша ссылка на оплату\n\n{}\n').format(transaction_new.url)
             self.bot.send_message(self.message.chat.id, message_text)
         else:
             manager = restaurant.managers.objects.filter(is_active=True).first()
-            message_text = self.get_message_text('init_payment_fail', f'Произошла ошибка при созании платежа, обратитесь к [администратору](https://t.me/{manager.name})')
+            message_text = self.get_message_text('init_payment_fail',
+                                                 f'Произошла ошибка при созании платежа, обратитесь к '
+                                                 f'[администратору](https://t.me/{manager.name})')
             self.bot.send_message(self.message.chat.id, message_text, parse_mode='Markdown')
         return self.user.step
 
     def card_repeat_bonus(self, transaction_id):
         transaction = Transaction.objects.filter(pk=transaction_id).first()
-        transaction_new = Transaction(user=transaction.user, count=transaction.count, restaurant=transaction.restaurant, card=transaction.card)
+        transaction_new = Transaction(user=transaction.user, count=transaction.count,
+                                      restaurant=transaction.restaurant, card=transaction.card)
         transaction.save()
         for product in transaction.products.all():
             transaction_new.products.add(product)
@@ -389,10 +432,12 @@ class BotAction:
 
     def restaurants(self):
         markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton(self.get_message_text('nearest_rest_button', '📍Ближайшие'), callback_data='nearest_restaurants'))
+        markup.add(types.InlineKeyboardButton(self.get_message_text('nearest_rest_button', '📍Ближайшие'),
+                                              callback_data='nearest_restaurants'))
         restaurants = Restaurant.objects.filter(telegram_bot=TelegramBot.objects.get(token=self.bot.token)).all()
         for restaurant in restaurants:
-            markup.add(types.InlineKeyboardButton(restaurant.restaurantsettings.address, callback_data=f'restaurant_{restaurant.pk}_0'))
+            markup.add(types.InlineKeyboardButton(restaurant.restaurantsettings.address,
+                                                  callback_data=f'restaurant_{restaurant.pk}_0'))
         message_text = self.get_message_text('restaurants', 'Наши заведения')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
         return 2
@@ -401,7 +446,8 @@ class BotAction:
         restaurants = Restaurant.objects.filter(telegram_bot=TelegramBot.objects.get(token=self.bot.token)).all()
         markup = types.InlineKeyboardMarkup(row_width=1)
         for restaurant in restaurants:
-            markup.add(types.InlineKeyboardButton(restaurant.restaurantsettings.address, callback_data=f'restaurant_{restaurant.pk}_0'))
+            markup.add(types.InlineKeyboardButton(restaurant.restaurantsettings.address,
+                                                  callback_data=f'restaurant_{restaurant.pk}_0'))
         message_text = self.get_message_text('all_restaurants', 'Выберите из списка ниже заведение.')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
 
@@ -412,7 +458,8 @@ class BotAction:
         markup.add(types.KeyboardButton('Мое местоположение', request_location=True),
                    types.KeyboardButton('Главное меню'))
 
-        message_text = self.get_message_text('nearest_restaurant', 'Отправьте свое местоположение, чтобы найти ближайший ресторан')
+        message_text = self.get_message_text('nearest_restaurant',
+                                             'Отправьте свое местоположение, чтобы найти ближайший ресторан')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
         return 4
 
@@ -422,7 +469,8 @@ class BotAction:
         for restaurant in restaurants:
             rest_latitude = restaurant.restaurantsettings.latitude
             rest_longitude = restaurant.restaurantsettings.longitude
-            rest_distance = '{:.3f}'.format(geopy_distance.vincenty((latitude, longitude), (rest_latitude, rest_longitude)).km)
+            rest_distance = '{:.3f}'.format(geopy_distance.vincenty((latitude, longitude),
+                                                                    (rest_latitude, rest_longitude)).km)
             distances.append(rest_distance)
         markup = types.InlineKeyboardMarkup(row_width=1)
         distances.sort()
@@ -430,18 +478,20 @@ class BotAction:
         if len(distances) < 3:
             rang = len(distances)
         for i in range(0, rang):
-            markup.add(types.InlineKeyboardButton(f'{restaurants[i].restaurantsettings.address} ({distances[i]}km)', callback_data=f'restaurant_{restaurants[i].pk}_0'))
+            markup.add(types.InlineKeyboardButton(f'{restaurants[i].restaurantsettings.address} ({distances[i]}km)',
+                                                  callback_data=f'restaurant_{restaurants[i].pk}_0'))
         message_text = self.get_message_text('nearests_restaurants', 'Выберите один из ближайших ресторанов')
         self.bot.send_message(self.message.chat.id, message_text, reply_markup=markup)
         return 5
 
     def restaurant_category(self, restaurant_id, rest_category, page):
         restaurant = Restaurant.objects.get(pk=restaurant_id)
-        TelegramUserProduct.objects.filter(user=self.user, is_basket=False, is_store=False, restaurant=restaurant).all().delete()
+        TelegramUserProduct.objects.filter(user=self.user, is_basket=False, is_store=False,
+                                           restaurant=restaurant).all().delete()
         markup = types.InlineKeyboardMarkup(row_width=3)
         offset_menu = page * 10
         menu = rest_category
-        max_pages = int((len(menu.products) + len(menu.categories)) / 5) if ((len(menu.products) + len(menu.categories)) % 5 == 0) else int((len(menu.products) + len(menu.categories)) / 5 + 1)
+        max_pages = calculate_max_pages()
         next_page = (page + 1) if (page + 1 < max_pages) else 0
         previous_page = (page - 1) if (page - 1 > 0) else max_pages - 1
         all_items = menu.products + menu.categories
@@ -450,19 +500,28 @@ class BotAction:
                 break
             item = all_items[j]
             if isinstance(item, MenuStruct):
-                markup.add(types.InlineKeyboardButton(f'{item.name}', callback_data=f'category_{restaurant.pk}_{item.id}_0'))
+                markup.add(types.InlineKeyboardButton(f'{item.name}',
+                                                      callback_data=f'category_{restaurant.pk}_{item.struct_key}_0'))
             elif isinstance(item, MenuProduct):
-                markup.add(types.InlineKeyboardButton(f'{item.name} {item.volume} {item.unit}.({item.price}₽)', callback_data=f'product_{restaurant.pk}_{item.id}'))
+                markup.add(types.InlineKeyboardButton(f'{item.name} {item.volume} {item.unit}.({item.price}₽)',
+                                                      callback_data=f'product_{restaurant.pk}_{item.struct_key}'))
 
         if len(menu.products) + len(menu.categories) > 10:
-            markup.add(types.InlineKeyboardButton(f'{previous_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'),
-                       types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
-                       types.InlineKeyboardButton(f'{next_page}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{next_page}'))
+            markup.add(types.InlineKeyboardButton(
+                f'{previous_page}/{max_pages}',
+                callback_data=f'category_{restaurant.pk}_{menu.struct_key}_{previous_page}'),
+                       types.InlineKeyboardButton(
+                           'Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
+                       types.InlineKeyboardButton(
+                           f'{next_page}/{max_pages}',
+                           callback_data=f'category_{restaurant.pk}_{menu.struct_key}_{next_page}'))
         else:
             if menu.previous_id == -1:
-                markup.add(types.InlineKeyboardButton('Назад', callback_data=f'all_restaurants'))
+                markup.add(types.InlineKeyboardButton(
+                    'Назад', callback_data=f'all_restaurants'))
             else:
-                markup.add(types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'))
+                markup.add(types.InlineKeyboardButton(
+                    'Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'))
         message_text = self.get_message_text('category', 'Выберите категорию или товар')
         try:
             self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
@@ -474,7 +533,8 @@ class BotAction:
     def restaurant_menu(self, restaurant_id, page, struct):
 
         restaurant = Restaurant.objects.get(pk=restaurant_id)
-        TelegramUserProduct.objects.filter(user=self.user, is_basket=False, is_store=False, restaurant=restaurant).all().delete()
+        TelegramUserProduct.objects.filter(user=self.user, is_basket=False, is_store=False,
+                                           restaurant=restaurant).all().delete()
         menu = struct
         offset_menu = page * 10
         max_pages = int(len(menu.products) / 5) if (len(menu.products) % 5 == 0) else int(len(menu.products) / 5 + 1)
@@ -482,21 +542,33 @@ class BotAction:
         previous_page = (page - 1) if (page - 1 > 0) else max_pages - 1
         markup = types.InlineKeyboardMarkup(row_width=3)
 
-        TelegramUserProduct.objects.filter(user=self.user, is_basket=False, is_store=False, restaurant=restaurant).all().delete()
+        TelegramUserProduct.objects.filter(user=self.user, is_basket=False,
+                                           is_store=False, restaurant=restaurant).all().delete()
 
         for i in range(offset_menu, offset_menu + 10):
             if i >= len(menu.products):
                 break
-            markup.add(types.InlineKeyboardButton(f'{menu.products[i].name} {menu.products[i].volume} {menu.products[i].unit}.({menu.products[i].price}₽)', callback_data=f'product_{restaurant.pk}_{menu.products[i].id}'))
+            markup.add(types.InlineKeyboardButton(
+                f'{menu.products[i].name} {menu.products[i].volume} '
+                f'{menu.products[i].unit}.({menu.products[i].price}₽)',
+                callback_data=f'product_{restaurant.pk}_{menu.products[i].struct_key}'))
         if len(menu.products) > 10:
-            markup.add(types.InlineKeyboardButton(f'{previous_page + 1}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'),
-                       types.InlineKeyboardButton(f'Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
-                       types.InlineKeyboardButton(f'{next_page + 1}/{max_pages}', callback_data=f'category_{restaurant.pk}_{menu.id}_{previous_page}'))
+            markup.add(types.InlineKeyboardButton(
+                f'{previous_page + 1}/{max_pages}',
+                callback_data=f'category_{restaurant.pk}_{menu.struct_key}_{previous_page}'),
+                       types.InlineKeyboardButton(
+                           f'Назад',
+                           callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'),
+                       types.InlineKeyboardButton(
+                           f'{next_page + 1}/{max_pages}',
+                           callback_data=f'category_{restaurant.pk}_{menu.struct_key}_{previous_page}'))
         else:
-            markup.add(types.InlineKeyboardButton('Назад', callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'))
+            markup.add(types.InlineKeyboardButton('Назад',
+                                                  callback_data=f'category_{restaurant.pk}_{menu.previous_id}_0'))
         message_text = self.get_message_text('restaurant', 'Выберите товар')
         try:
-            self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id, text=message_text, reply_markup=markup)
+            self.bot.edit_message_text(chat_id=self.message.chat.id, message_id=self.message.message_id,
+                                       text=message_text, reply_markup=markup)
         except apihelper.ApiException:
             self.bot.delete_message(chat_id=self.message.chat.id, message_id=self.message.message_id)
             self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
@@ -504,12 +576,14 @@ class BotAction:
 
     def restaurant_product(self, restaurant_id, product):
         restaurant = Restaurant.objects.get(pk=restaurant_id)
-        product_orm = restaurant.products.filter(pk=product.id).first()
+        product_orm = restaurant.products.filter(struct_key=product.struct_key).first()
         if product_orm:
-            user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
-                                                              is_basket=False, is_store=False, restaurant=restaurant).first()
+            user_product = TelegramUserProduct.objects.filter(
+                user=self.user, product=product_orm, is_basket=False,
+                is_store=False, restaurant=restaurant).first()
             if not user_product:
-                user_product = TelegramUserProduct(user=self.user, product=product_orm, is_basket=False, is_store=False, restaurant=restaurant)
+                user_product = TelegramUserProduct(user=self.user, product=product_orm, is_basket=False,
+                                                   is_store=False, restaurant=restaurant)
                 user_product.save()
 
             addition_price = 0
@@ -518,25 +592,36 @@ class BotAction:
 
             message_text = self.get_message_text('product', 'Вы выбрали: {}')
             if addition_price:
-                message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price} + {addition_price}₽\n\n{product_orm.description}')
+                message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} '
+                                                   f'{product_orm.unit}.\n{product_orm.price} + '
+                                                   f'{addition_price}₽\n\n{product_orm.description}')
             else:
-                message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} {product_orm.unit}.\n{product_orm.price}₽\n\n{product_orm.description}')
+                message_text = message_text.format(f'\n{product_orm.name}\n{product_orm.volume} '
+                                                   f'{product_orm.unit}.\n{product_orm.price}₽\n\n'
+                                                   f'{product_orm.description}')
 
             markup = types.InlineKeyboardMarkup(row_width=1)
-            markup.add(types.InlineKeyboardButton('✅Купить', callback_data=f'buyproduct_{restaurant.pk}_{user_product.product.pk}'))
+            markup.add(types.InlineKeyboardButton(
+                '✅Купить', callback_data=f'buyproduct_{restaurant.pk}_{user_product.product.pk}'))
             if product_orm.additions.all():
-                markup.add(types.InlineKeyboardButton(f'⚙️Опции продукта', callback_data=f'additions_{restaurant.pk}_{user_product.pk}'))
-            markup.add(types.InlineKeyboardButton(f'Назад', callback_data=f'category_{restaurant.pk}_{product.previous_id}_0'))
+                markup.add(types.InlineKeyboardButton(
+                    f'⚙️Опции продукта', callback_data=f'additions_{restaurant.pk}_{user_product.pk}'))
+            markup.add(types.InlineKeyboardButton(
+                f'Назад', callback_data=f'category_{restaurant.pk}_{product.previous_id}_0'))
 
             if product_orm.image:
-                self.bot.send_photo(self.message.chat.id, open(product_orm.image.path, 'rb'), caption=message_text, reply_markup=markup)
+                self.bot.send_photo(self.message.chat.id, open(product_orm.image.path, 'rb'),
+                                    caption=message_text, reply_markup=markup)
             else:
-                self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+                self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
+                                           message_id=self.message.message_id, reply_markup=markup)
         else:
             message_text = self.get_message_text('product_not_found', 'Извините, такого продукта сейчас нет.')
             markup = types.InlineKeyboardMarkup(row_width=1)
-            markup.add(types.InlineKeyboardButton(f'Назад', callback_data=f'category_{restaurant.pk}_{product.previous_id}'))
-            self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+            markup.add(types.InlineKeyboardButton(
+                f'Назад', callback_data=f'category_{restaurant.pk}_{product.previous_id}'))
+            self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
+                                       message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
     def restaurant_additions(self, restaurant_id, user_product, additions):
@@ -548,27 +633,34 @@ class BotAction:
             addition_orm = Addition.objects.filter(pk=addition.id).first()
             if addition_orm and addition_orm not in all_user_additions:
                 count_additions += 1
-                markup.add(types.InlineKeyboardButton(f'{addition_orm.name} ({addition_orm.price}₽)', callback_data=f'additionadd_{restaurant.pk}_{user_product.pk}_{addition_orm.pk}'))
-        markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
+                markup.add(types.InlineKeyboardButton(
+                    f'{addition_orm.name} ({addition_orm.price}₽)',
+                    callback_data=f'additionadd_{restaurant.pk}_{user_product.pk}_{addition_orm.pk}'))
+        markup.add(types.InlineKeyboardButton(
+            'Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
 
         if count_additions == 0:
             message_text = self.get_message_text('additions_not_found', 'В этот продукт ничего нельзя добавить')
             try:
-                self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
+                self.bot.edit_message_text(chat_id=self.message.chat.id,
+                                           text=self.message.text + f'\n\n{message_text}',
                                            message_id=self.message.message_id, reply_markup=markup)
             except Exception as err:
                 LOG.error(err)
-                self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.caption + f'\n\n{message_text}',
+                self.bot.edit_message_caption(chat_id=self.message.chat.id,
+                                              caption=self.message.caption + f'\n\n{message_text}',
                                               message_id=self.message.message_id, reply_markup=markup)
 
         else:
             message_text = self.get_message_text('additions', 'Выберите, что хотите добавить')
             try:
-                self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
+                self.bot.edit_message_text(chat_id=self.message.chat.id,
+                                           text=self.message.text + f'\n\n{message_text}',
                                            message_id=self.message.message_id, reply_markup=markup)
             except Exception as err:
                 LOG.error(err)
-                self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=self.message.caption + f'\n\n{message_text}',
+                self.bot.edit_message_caption(chat_id=self.message.chat.id,
+                                              caption=self.message.caption + f'\n\n{message_text}',
                                               message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
@@ -583,8 +675,11 @@ class BotAction:
             addition_orm = Addition.objects.filter(pk=addition.id).first()
             if addition_orm and addition_orm not in all_user_additions:
                 count_additions += 1
-                markup.add(types.InlineKeyboardButton(f'{addition_orm.name} ({addition_orm.price}₽)', callback_data=f'additionadd_{restaurant.pk}_{user_product.pk}_{addition_orm.pk}'))
-        markup.add(types.InlineKeyboardButton('Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
+                markup.add(types.InlineKeyboardButton(
+                    f'{addition_orm.name} ({addition_orm.price}₽)',
+                    callback_data=f'additionadd_{restaurant.pk}_{user_product.pk}_{addition_orm.pk}'))
+        markup.add(types.InlineKeyboardButton(
+            'Назад', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
 
         addition_added = f'{add_addition.name} добавлен\n'
         addition_price = 0
@@ -593,15 +688,23 @@ class BotAction:
 
         message_text = self.get_message_text('product', 'Вы выбрали: {}')
         if addition_price:
-            message_text = message_text.format(f'\n{user_product.product.name}\n{user_product.product.volume} {user_product.product.unit}.\n{user_product.product.price} + {addition_price}₽\n\n{user_product.product.description}')
+            message_text = message_text.format(
+                f'\n{user_product.product.name}\n{user_product.product.volume} '
+                f'{user_product.product.unit}.\n{user_product.product.price} + '
+                f'{addition_price}₽\n\n{user_product.product.description}')
         else:
-            message_text = message_text.format(f'\n{user_product.product.name}\n{user_product.product.volume} {user_product.product.unit}.\n{user_product.product.price} + {addition_price}₽\n\n{user_product.product.description}')
+            message_text = message_text.format(
+                f'\n{user_product.product.name}\n{user_product.product.volume} '
+                f'{user_product.product.unit}.\n{user_product.product.price} + '
+                f'{addition_price}₽\n\n{user_product.product.description}')
         try:
-            self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text + f'\n\n{addition_added}',
+            self.bot.edit_message_text(chat_id=self.message.chat.id,
+                                       text=message_text + f'\n\n{addition_added}',
                                        message_id=self.message.message_id, reply_markup=markup)
         except Exception as err:
             LOG.error(err)
-            self.bot.edit_message_caption(chat_id=self.message.chat.id, caption=message_text + f'\n\n{addition_added}',
+            self.bot.edit_message_caption(chat_id=self.message.chat.id,
+                                          caption=message_text + f'\n\n{addition_added}',
                                           message_id=self.message.message_id, reply_markup=markup)
         return self.user.step
 
@@ -611,7 +714,7 @@ class BotAction:
         last_transaction = Transaction.objects.filter(user=self.user, status=0, url=None)
         if last_transaction:
             last_transaction.delete()
-        product_orm = restaurant.products.filter(pk=product_id).first()
+        product_orm = restaurant.products.filter(struct_key=product_id).first()
         if product_orm:
             user_product = TelegramUserProduct.objects.filter(user=self.user, product=product_orm,
                                                               is_basket=False, is_store=False).first()
@@ -620,12 +723,19 @@ class BotAction:
                 additions_price += addition.price
 
             if user_product:
-                markup.add(types.InlineKeyboardButton('➡️Добавить в корзину и продолжить', callback_data=f'addtobasket_{restaurant.pk}_{user_product.pk}'))
-                markup.add(types.InlineKeyboardButton('💳Оплатить картой', callback_data=f'paycardproduct_{restaurant.pk}_{user_product.pk}'))
+                markup.add(types.InlineKeyboardButton(
+                    '➡️Добавить в корзину и продолжить',
+                    callback_data=f'addtobasket_{restaurant.pk}_{user_product.pk}'))
+                markup.add(types.InlineKeyboardButton(
+                    '💳Оплатить картой',
+                    callback_data=f'paycardproduct_{restaurant.pk}_{user_product.pk}'))
                 if self.user.bonus.count >= user_product.product.price + additions_price:
-                    markup.add(types.InlineKeyboardButton('🎁Оплатить бонусами', callback_data=f'productbonuspay_{restaurant.pk}_{user_product.pk}'))
-                # markup.add(types.InlineKeyboardButton('🛒Перейти в корзину', callback_data=f'basket'))
-                markup.add(types.InlineKeyboardButton('Вернуться к продукту', callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
+                    markup.add(types.InlineKeyboardButton(
+                        '🎁Оплатить бонусами',
+                        callback_data=f'productbonuspay_{restaurant.pk}_{user_product.pk}'))
+                markup.add(types.InlineKeyboardButton(
+                    'Вернуться к продукту',
+                    callback_data=f'product_{restaurant.pk}_{user_product.product.pk}'))
                 message_text = self.get_message_text('buyproduct', 'Выберите действие')
                 self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
             else:
@@ -640,7 +750,8 @@ class BotAction:
     def pay_card_product(self, restaurant_id, user_product_id):
         user_product = TelegramUserProduct.objects.filter(pk=user_product_id).first()
         if not user_product:
-            self.bot.send_message(chat_id=self.message.chat.id, text="такой продукт больше не существует, выебрите его заного")
+            self.bot.send_message(chat_id=self.message.chat.id,
+                                  text="такой продукт больше не существует, выебрите его заного")
             return 1
 
         restaurant = Restaurant.objects.filter(pk=restaurant_id).first()
@@ -648,15 +759,18 @@ class BotAction:
         additions_price = 0
         for addition in user_product.additions.all():
             additions_price += addition.price * 100
-        transaction = Transaction(user=self.user, count=user_product.product.price * 100 + additions_price, restaurant=restaurant)
+        transaction = Transaction(user=self.user,
+                                  count=user_product.product.price * 100 + additions_price, restaurant=restaurant)
         transaction.save()
 
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup = self.pay_card(restaurant_id, transaction, markup)
         if len(markup.keyboard) == 0:
             return self.pay_another_card(restaurant_id, user_product_id)
-        markup.add(types.InlineKeyboardButton('➕Добавить новую карту', callback_data=f'productpayanother_{restaurant_id}_{user_product_id}'))
-        markup.add(types.InlineKeyboardButton('Назад', callback_data=f'buyproduct_{restaurant_id}_{user_product.product.pk}'))
+        markup.add(types.InlineKeyboardButton('➕Добавить новую карту',
+                                              callback_data=f'productpayanother_{restaurant_id}_{user_product_id}'))
+        markup.add(types.InlineKeyboardButton('Назад',
+                                              callback_data=f'buyproduct_{restaurant_id}_{user_product.product.pk}'))
         message_text = self.get_message_text('choice_card_type', 'Выберите Способ оплаты')
         self.bot.send_message(chat_id=self.message.chat.id, text=message_text, reply_markup=markup)
         return self.user.step
@@ -684,10 +798,14 @@ class BotAction:
         self.user.telegrambasket.products.add(user_product)
         message_text = self.get_message_text('added_to_basket', f'{user_product.product.name} добавлен в корзину')
         markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton(f'Добавить ещё 1', callback_data=f'repeatonemoreproduct_{user_product.pk}'))
-        markup.add(types.InlineKeyboardButton(f'✅Завершить заказ', callback_data='complete_current_order'))
-        markup.add(types.InlineKeyboardButton(f'Продолжить покупки', callback_data=f'restaurant_{restaurant_id}_0'))
-        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text, message_id=self.message.message_id, reply_markup=markup)
+        markup.add(types.InlineKeyboardButton(f'Добавить ещё 1',
+                                              callback_data=f'repeatonemoreproduct_{user_product.pk}'))
+        markup.add(types.InlineKeyboardButton(f'✅Завершить заказ',
+                                              callback_data='complete_current_order'))
+        markup.add(types.InlineKeyboardButton(f'Продолжить покупки',
+                                              callback_data=f'restaurant_{restaurant_id}_0'))
+        self.bot.edit_message_text(chat_id=self.message.chat.id, text=message_text,
+                                   message_id=self.message.message_id, reply_markup=markup)
         user_product.save()
         return self.user.step
 
@@ -696,7 +814,8 @@ class BotAction:
         if not user_product:
             self.bot.send_message(chat_id=self.message.chat.id, text="Такого продукта больше нет")
             return self.user.step
-        new_user_product = TelegramUserProduct(user=user_product.user, product=user_product.product, restaurant=user_product.restaurant)
+        new_user_product = TelegramUserProduct(user=user_product.user, product=user_product.product,
+                                               restaurant=user_product.restaurant)
         new_user_product.save()
         for addition in user_product.additions.all():
             new_user_product.additions.add(addition)
@@ -704,10 +823,14 @@ class BotAction:
         self.user.telegrambasket.products.add(new_user_product)
         message_text = self.get_message_text('added_to_basket', f'{new_user_product.product.name} добавлен в корзину')
         markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton(f'✅Завершить заказ', callback_data='complete_current_order'))
-        markup.add(types.InlineKeyboardButton(f'Продолжить покупки', callback_data=f'restaurant_{new_user_product.restaurant.pk}_0'))
-        markup.add(types.InlineKeyboardButton(f'Добавить ещё 1', callback_data=f'repeatonemoreproduct_{new_user_product.pk}'))
-        self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + "\nПродукт добавлен", message_id=self.message.message_id, reply_markup=markup)
+        markup.add(types.InlineKeyboardButton(f'✅Завершить заказ',
+                                              callback_data='complete_current_order'))
+        markup.add(types.InlineKeyboardButton(f'Продолжить покупки',
+                                              callback_data=f'restaurant_{new_user_product.restaurant.pk}_0'))
+        markup.add(types.InlineKeyboardButton(f'Добавить ещё 1',
+                                              callback_data=f'repeatonemoreproduct_{new_user_product.pk}'))
+        self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + "\nПродукт добавлен",
+                                   message_id=self.message.message_id, reply_markup=markup)
         user_product.save()
         return self.user.step
 
@@ -730,29 +853,36 @@ class BotAction:
         additions_price = 0
         for addition in product.additions.all():
             additions_price += addition.price * 100
-        transaction = Transaction(user=self.user, count=product.product.price * 100 + additions_price, restaurant=restaurant)
+        transaction = Transaction(user=self.user, count=product.product.price * 100 + additions_price,
+                                  restaurant=restaurant)
         transaction.save()
         transaction.products.add(product)
         product.is_store = True
         product.save()
         owner = restaurant.telegram_bot.owner
-        payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
+        payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay,
+                                   owner.ownersettings.terminal_key, owner.ownersettings.password)
         transaction = payment_system.init_pay(self.user, transaction)
 
         if transaction.url:
-            message_text = self.get_message_text('payment_link', 'Ваша ссылка на оплату\n\n{}\n').format(transaction.url)
+            message_text = self.get_message_text('payment_link', 'Ваша ссылка на оплату\n\n{}\n').format(
+                transaction.url)
             self.bot.send_message(self.message.chat.id, message_text)
             step = self.get_user_phone()
             return step
         else:
             manager = restaurant.managers.objects.filter(is_active=True).first()
-            message_text = self.get_message_text('init_payment_fail', f'Произошла ошибка при созании платежа, обратитесь к [администратору](https://t.me/{manager.name})')
+            message_text = self.get_message_text('init_payment_fail',
+                                                 f'Произошла ошибка при созании платежа, обратитесь к '
+                                                 f'[администратору](https://t.me/{manager.name})')
             self.bot.send_message(self.message.chat.id, message_text, parse_mode='Markdown')
         return self.user.step
 
     def get_user_phone(self):
         if not self.user.phone:
-            message_text = self.get_message_text('get_phone', 'Просьба отправить свой номер телефона на случай если нам потребуется связаться с Вами')
+            message_text = self.get_message_text('get_phone',
+                                                 'Просьба отправить свой номер телефона на случай если нам '
+                                                 'потребуется связаться с Вами')
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=2)
             markup.add(types.KeyboardButton('📞Отправить свой номер', request_contact=True),
                        types.KeyboardButton('🏠Главное меню'))
@@ -765,7 +895,9 @@ class BotAction:
         restaurant = Restaurant.objects.get(pk=restaurant_id)
         user_cards = Card.objects.filter(~Q(rebill_id=None), is_deleted=False, user=self.user).all()
         for user_card in user_cards:
-            markup.add(types.InlineKeyboardButton(f'{user_card.card_number}', callback_data=f'choicecard_{restaurant.pk}_{user_card.pk}_{transaction.pk}'))
+            markup.add(types.InlineKeyboardButton(
+                f'{user_card.card_number}',
+                callback_data=f'choicecard_{restaurant.pk}_{user_card.pk}_{transaction.pk}'))
 
         return markup
 
@@ -785,13 +917,15 @@ class BotAction:
                 self.bot.send_message(self.message.chat.id, 'Ресторан пропал, закажите в другом', reply_markup=markup)
                 return 1
             owner = restaurant.telegram_bot.owner
-            payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay, owner.ownersettings.terminal_key, owner.ownersettings.password)
+            payment_system = PaySystem(restaurant.restaurantsettings.payment_type, TinkoffPay,
+                                       owner.ownersettings.terminal_key, owner.ownersettings.password)
             card = user_card
             if not card:
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
                 markup.add(types.KeyboardButton('🛒Корзина'), types.KeyboardButton('Заведения'))
                 markup.add(types.KeyboardButton('🎁Скидки и бонусы'), types.KeyboardButton('⚙️Настройки'))
-                self.bot.send_message(self.message.chat.id, 'Карта пропала, привяжите ее по новой.', reply_markup=markup)
+                self.bot.send_message(self.message.chat.id, 'Карта пропала, привяжите ее по новой.',
+                                      reply_markup=markup)
                 return 1
 
             transaction = payment_system.do_pay(self.user, transaction, card)
@@ -801,13 +935,16 @@ class BotAction:
                 self.bot.send_message(self.message.chat.id, message_text)
             else:
                 manager = restaurant.managers.filter(is_active=True).first()
-                message_text = self.get_message_text('init_payment_fail', f'Произошла ошибка при созании платежа, обратитесь к [администратору](https://t.me/{manager.name})')
+                message_text = self.get_message_text('init_payment_fail',
+                                                     f'Произошла ошибка при созании платежа, обратитесь к '
+                                                     f'[администратору](https://t.me/{manager.name})')
                 self.bot.send_message(self.message.chat.id, message_text, parse_mode='Markdown')
         else:
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
             markup.add(types.KeyboardButton('🛒Корзина'), types.KeyboardButton('Заведения'))
             markup.add(types.KeyboardButton('🎁Скидки и бонусы'), types.KeyboardButton('⚙️Настройки'))
-            self.bot.send_message(self.message.chat.id, 'Такой транзакции уже нет, выберите товар заного', reply_markup=markup)
+            self.bot.send_message(self.message.chat.id, 'Такой транзакции уже нет, выберите товар заного',
+                                  reply_markup=markup)
             return 1
         return self.user.step
 
@@ -828,7 +965,8 @@ class BotAction:
             try:
                 transaction = payment_system.init_pay(self.user, transaction)
             except NotEnoughBonuses:
-                message_text = self.get_message_text('not_enough_bonuses', 'У вас недостаточно бонусов на счете, оплатите заказ картой')
+                message_text = self.get_message_text('not_enough_bonuses',
+                                                     'У вас недостаточно бонусов на счете, оплатите заказ картой')
                 self.bot.edit_message_text(chat_id=self.message.chat.id, text=self.message.text + f'\n\n{message_text}',
                                            message_id=self.message.message_id)
                 return self.user.step
@@ -840,8 +978,9 @@ class BotAction:
             if not manager:
                 manager = transaction.restaurant.managers.filter(is_active=True).first()
                 if not manager:
-                    self.bot.send_message(transaction.user.user_id, 'Оплата произведена, сейчас нет работающих менеджеров, '
-                                                                    'Мы помним про ваш заказ, как только он освободится, вам придет оповещение')
+                    self.bot.send_message(transaction.user.user_id,
+                                          'Оплата произведена, сейчас нет работающих менеджеров, '
+                                          'Мы помним про ваш заказ, как только он освободится, вам придет оповещение')
                     transaction.status = 6
 
             message_text = f'Заказ №{transaction.pk}\n'
@@ -862,12 +1001,16 @@ class BotAction:
         if restaurant_id is None:
             restaurants = Restaurant.objects.filter(telegram_bot=self.user.telegram_bot).all()
             for restaurant in restaurants:
-                if restaurant.restaurantsettings.time_opened < timezone.now().time() < restaurant.restaurantsettings.time_closed:
+                time_opened = restaurant.restaurantsettings.time_opened
+                time_closed = restaurant.restaurantsettings.time_closed
+                if time_opened < timezone.now().time() < time_closed:
                     return True
         else:
             restaurant = Restaurant.objects.filter(pk=restaurant_id).first()
             if restaurant:
-                if restaurant.restaurantsettings.time_opened < timezone.now().time() < restaurant.restaurantsettings.time_closed:
+                time_opened = restaurant.restaurantsettings.time_opened
+                time_closed = restaurant.restaurantsettings.time_closed
+                if time_opened < timezone.now().time() < time_closed:
                     return True
                 else:
                     return False
@@ -882,7 +1025,13 @@ class BotAction:
                 for product in basket.products.all():
                     if product.restaurant != restaurant:
                         markup = types.InlineKeyboardMarkup(row_width=1)
-                        markup.add(types.InlineKeyboardButton(f'{product.restaurant.restaurantsettings.address}', callback_data=f'restaurant_{product.restaurant.pk}_0'))
-                        self.bot.send_message(self.message.chat.id, self.get_message_text('two_restaurants_in_basket', 'Вы заказали уже в другом ресторане, отчистите корзина или продолжите покупки в этом ресторане'), reply_markup=markup)
+                        markup.add(types.InlineKeyboardButton(f'{product.restaurant.restaurantsettings.address}',
+                                                              callback_data=f'restaurant_{product.restaurant.pk}_0'))
+                        self.bot.send_message(self.message.chat.id,
+                                              self.get_message_text(
+                                                  'two_restaurants_in_basket',
+                                                  'Вы заказали уже в другом ресторане, отчистите корзина или '
+                                                  'продолжите покупки в этом ресторане'),
+                                              reply_markup=markup)
                         return False
         return True

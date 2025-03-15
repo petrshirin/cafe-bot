@@ -25,7 +25,7 @@
               "description": "description1",
               "volume": "1",
               "unit": "шт",
-              "time_cooking": "01:00:00",
+              "cooking_time": "01:00:00",
               "additions": null
             },
         {
@@ -35,7 +35,7 @@
               "description": "Test product",
               "volume": "500",
               "unit": "мл",
-              "time_cooking": "01:00:00",
+              "cooking_time": "01:00:00",
               "additions": null
         }
       ],
@@ -51,7 +51,7 @@
               "volume": "500",
               "unit": "мл",
               "price": 500,
-              "time_cooking": "01:00:00",
+              "cooking_time": "01:00:00",
               "additions": null
             },
             {
@@ -61,7 +61,7 @@
               "description": "description1",
               "volume": "1",
               "unit": "шт",
-              "time_cooking": "01:00:00",
+              "cooking_time": "01:00:00",
               "additions": null
             }
           ]
@@ -77,7 +77,7 @@
               "volume": "1",
               "unit": "шт",
               "price": 200,
-              "time_cooking": "00:30:00",
+              "cooking_time": "00:30:00",
               "additions": null
             },
             {
@@ -87,7 +87,7 @@
               "description": "description1",
               "volume": "500",
               "unit": "мл",
-              "time_cooking": "00:20:00",
+              "cooking_time": "00:20:00",
               "additions": null
             }
           ]
@@ -103,7 +103,7 @@
               "description": "description1",
               "volume": "1",
               "unit": "шт",
-              "time_cooking": "01:00:00",
+              "cooking_time": "01:00:00",
               "additions": null
             },
             {
@@ -113,7 +113,7 @@
               "description": "description1",
               "volume": "500",
               "unit": "мл",
-              "time_cooking": "01:00:00",
+              "cooking_time": "01:00:00",
               "additions": null
             }
           ]
@@ -131,7 +131,7 @@
               "description": "description1",
               "volume": "500",
               "unit": "мл",
-              "time_cooking": "01:00:00",
+              "cooking_time": "01:00:00",
               "additions": [
                 {
                   "id": 1,
@@ -152,7 +152,7 @@
               "description": "description1",
               "volume": "500",
               "unit": "мл",
-              "time_cooking": "01:00:00",
+              "cooking_time": "01:00:00",
               "additions": [
                 {
                   "id": 1,

@@ -4,6 +4,7 @@ from django.contrib.postgres.fields import JSONField
 
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
+from .menu_parser import MenuStruct
 
 
 class NonStrippingTextField(models.TextField):
@@ -52,6 +53,7 @@ class TelegramMessage(models.Model):
 
 
 class Addition(models.Model):
+    struct_key = models.IntegerField()
     name = models.CharField(max_length=255)
     price = models.IntegerField()
 
@@ -60,6 +62,7 @@ class Addition(models.Model):
 
 
 class RestaurantMenu(models.Model):
+    struct_key = models.IntegerField()
     name = models.CharField(max_length=255)
     description = models.TextField()
     image = models.ImageField(upload_to='images/', default=None, null=True, blank=True)
@@ -67,7 +70,7 @@ class RestaurantMenu(models.Model):
     unit = models.CharField(max_length=30)
     price = models.IntegerField()
     cooking_time = models.DurationField()
-    additions = models.ManyToManyField(Addition, null=True, blank=True)
+    additions = models.ManyToManyField(Addition, blank=True)
 
     def __str__(self):
         return f'{self.pk}. {self.name} {self.volume}{self.unit}. ({self.price}руб.)'
@@ -84,8 +87,8 @@ class Restaurant(models.Model):
     name = models.CharField(max_length=255)
     telegram_bot = models.ForeignKey(TelegramBot, on_delete=models.CASCADE)
     menu_struct = JSONField()
-    products = models.ManyToManyField(RestaurantMenu, default=None, null=True)
-    managers = models.ManyToManyField(RestaurantManager, blank=True, default=None)
+    products = models.ManyToManyField(RestaurantMenu, blank=True)
+    managers = models.ManyToManyField(RestaurantManager, blank=True)
 
     class Meta:
         ordering = ['-pk']
@@ -119,14 +122,14 @@ class TelegramUserProduct(models.Model):
     user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
     product = models.ForeignKey(RestaurantMenu, on_delete=models.CASCADE)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, default=None, null=True, blank=True)
-    additions = models.ManyToManyField(Addition, null=True, blank=True)
+    additions = models.ManyToManyField(Addition, blank=True)
     is_basket = models.BooleanField(default=False)
     is_store = models.BooleanField(default=False)
 
 
 class TelegramBasket(models.Model):
     user = models.OneToOneField(TelegramUser, on_delete=models.CASCADE)
-    products = models.ManyToManyField(TelegramUserProduct)
+    products = models.ManyToManyField(TelegramUserProduct, blank=True)
 
 
 class Card(models.Model):
@@ -176,7 +179,7 @@ class Transaction(models.Model):
     """
     user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE)
     card = models.ForeignKey(Card, on_delete=models.CASCADE, default=None, blank=True, null=True)
-    products = models.ManyToManyField(TelegramUserProduct)
+    products = models.ManyToManyField(TelegramUserProduct, blank=True)
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
     payment_id = models.IntegerField(default=None, null=True, blank=True)
     is_parent = models.BooleanField(default=False)
@@ -238,3 +241,26 @@ def control_user_sales(sender, instance, created, **kwargs):
                     user_sale.delete()
 
 
+def create_products(menu_struct: MenuStruct):
+    for product in menu_struct.products:
+        rest_menu: RestaurantMenu = RestaurantMenu.objects.get_or_create(struct_key=product.struct_key,
+                                                                         defaults={
+                                                                             'name': product.name,
+                                                                             'description': product.description,
+                                                                             'volume': product.volume,
+                                                                             'unit': product.unit,
+                                                                             'price': product.price,
+                                                                             'cooking_time': product.cooking_time
+                                                                         })
+        rest_menu.additions.clear()
+        for addition in product.additions:
+            rest_menu.additions.add(addition)
+    for category_struct in menu_struct.categories:
+        create_products(category_struct)
+
+
+@receiver(post_save, sender=Restaurant)
+def update_products(sender: Restaurant, instance: Restaurant, created, **kwargs):
+    if instance.menu_struct:
+        menu = MenuStruct(instance.menu_struct, -1)
+        create_products(menu)
